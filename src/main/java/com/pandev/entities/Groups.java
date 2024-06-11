@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "rootnode", "ordernum" }) })
+@Table(indexes = @Index(columnList = "txtgroup"),
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "rootnode", "ordernum" }) })
 public class Groups {
 
     @Id

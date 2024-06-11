@@ -1,0 +1,6 @@
+# загрузка начальных данных в таблицу groups
+rootnode:Корневой узел1 # ordernum:1 # levelnum:1 # parent:current # txtgroup:Категория1
+rootnode:Корневой узел2 # ordernum:2 # levelnum:1 # parent:current # txtgroup:Категория2
+rootnode:Корневой узел3 # ordernum:3 # levelnum:1 # parent:current # txtgroup:Категория3
+
+
