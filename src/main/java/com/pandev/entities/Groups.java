@@ -2,11 +2,17 @@ package com.pandev.entities;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = @UniqueConstraint(columnNames={"order"}))
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "rootnode", "ordernum" }) })
 public class Groups {
 
     @Id
