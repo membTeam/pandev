@@ -1,13 +1,10 @@
 package com.pandev.templCommand;
 
 
-import com.pandev.controller.Constants;
-import com.pandev.controller.UserState;
+import com.pandev.utils.Constants;
 import lombok.NoArgsConstructor;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.io.IOException;
 
 @NoArgsConstructor
 public class ComdHelp implements TemplCommand {

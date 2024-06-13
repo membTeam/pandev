@@ -1,6 +1,6 @@
 package com.pandev.templCommand;
 
-import com.pandev.controller.ResponseHandl;
+import com.pandev.utils.ResponseHandl;
 import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.FileAPI;

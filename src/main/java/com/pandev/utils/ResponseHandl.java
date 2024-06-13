@@ -1,10 +1,8 @@
-package com.pandev.controller;
+package com.pandev.utils;
 
 
+import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,7 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.pandev.controller.Constants.START_TEXT;
+import static com.pandev.utils.Constants.START_TEXT;
 import com.pandev.templCommand.CommCommand;
 
 

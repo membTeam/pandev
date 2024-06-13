@@ -1,4 +1,4 @@
-package com.pandev.controller;
+package com.pandev.utils;
 
 public class Constants {
     public static final String START_DESCRIPTION = "Starts the bot";
