@@ -16,11 +16,13 @@ import java.nio.file.Paths;
 public class FileAPI {
 
     private final Path pathLoadData;
+    private final Path pathDir;
 
     public FileAPI(@Value("${file.load-data}") String file,
                    @Value("${directory.load-data}") String dir
                    ) {
         pathLoadData = Paths.get(dir + '/' + file);
+        pathDir = Paths.get(dir);
     }
 
     /**
@@ -31,6 +33,20 @@ public class FileAPI {
     public String loadDataFromFile() throws IOException {
 
         byte[] byteFromFile = Files.readAllBytes(pathLoadData);
+
+        return new String(byteFromFile);
+
+    }
+
+    /**
+     * Загрузка текстового файла - описание команд telegramBot
+     * @return
+     * @throws IOException
+     */
+    public String loadDataFromFile(String fileName) throws IOException {
+
+        Path path = pathDir.resolve(fileName);
+        byte[] byteFromFile = Files.readAllBytes(path);
 
         return new String(byteFromFile);
 

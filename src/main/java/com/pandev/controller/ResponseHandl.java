@@ -57,7 +57,10 @@ public class ResponseHandl {
 
         sender.execute(sendMessage);
 
-        chatStates.put(chatId, awaitingState);
+        if (awaitingState != UserState.NONE) {
+            chatStates.put(chatId, awaitingState);
+        }
+
     }
 
     private void stopChat(long chatId) {
@@ -83,6 +86,21 @@ public class ResponseHandl {
     }
 
     public void replyToCommand(long chatId, Message message) {
+
+        var comand = switch (message.getText()) {
+            case "/addElement" -> "addElement";
+            case "/viewTree" -> "viewTree";
+            case "/removeElement" -> "removeElement";
+            case "/help" -> "help";
+            default -> "empty";
+        };
+
+        if (comand.equals("empty")) {
+            promptWithKeyboardForState(chatId,
+                    "Команда " + message.getText()+ " не опознана",
+                    UserState.NONE );
+            return;
+        }
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
