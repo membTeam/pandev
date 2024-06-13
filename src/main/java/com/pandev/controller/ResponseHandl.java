@@ -2,6 +2,9 @@ package com.pandev.controller;
 
 
 import com.pandev.repositories.GroupsRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,12 +15,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.pandev.controller.Constants.START_TEXT;
+import com.pandev.templCommand.CommCommand;
+
 
 public class ResponseHandl {
 
     private final SilentSender sender;
     private final GroupsRepository groupRepo;
     private final Map<Long, UserState> chatStates;
+    private TelegramBot telegramBot;
+
+
+    private CommCommand getCommCommand() {
+        return telegramBot.getCommCommand();
+    }
+
+    public void init(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
+    }
 
     public ResponseHandl(SilentSender sender, DBContext db, GroupsRepository repo) {
         this.sender = sender;
@@ -49,7 +64,7 @@ public class ResponseHandl {
         }
     }
 
-    private void promptWithKeyboardForState(long chatId, String text,
+    public void promptWithKeyboardForState(long chatId, String text,
                                             UserState awaitingState) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
@@ -102,9 +117,15 @@ public class ResponseHandl {
             return;
         }
 
+        if (comand.equals("help")) {
+            var res = getCommCommand().preparationClass(message);
+            sender.execute(res);
+            return ;
+        }
+
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Набор команд можно узнать /help");
+        sendMessage.setText(message.getText() + " не реализована.");
 
         sender.execute(sendMessage);
     }
@@ -112,4 +133,12 @@ public class ResponseHandl {
     public boolean userIsActive(Long chatId) {
         return chatStates.containsKey(chatId);
     }
+
+    public SendMessage initMessage(long chatId, String mes) {
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(mes)
+                .build();
+    }
+
 }

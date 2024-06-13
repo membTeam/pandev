@@ -1,12 +1,16 @@
 package com.pandev.controller;
 
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.templCommand.CommCommand;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import java.util.function.BiConsumer;
 
+import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Reply;
@@ -18,18 +22,32 @@ import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 
-@Component
+@Service
 public class TelegramBot extends AbilityBot {
 
     private final String userName;
 
-    private final ResponseHandl responseHandl;
+    @Getter
+    private ResponseHandl responseHandl;
 
-    public TelegramBot(@Value("${BOT_TOKEN}") String token, GroupsRepository groupRepo){
+    @Getter
+    private CommCommand commCommand;
+
+    public TelegramBot(@Value("${BOT_TOKEN}") String token,
+                       GroupsRepository groupRepo,
+                       CommCommand commCommand ){
         super(token, "userpandev");
 
         this.userName = "userpandev";
-        responseHandl = new ResponseHandl(silent, db, groupRepo);
+
+        this.commCommand = commCommand;
+        this.responseHandl = new ResponseHandl(silent, db, groupRepo);
+    }
+
+    @PostConstruct
+    private void init() {
+        commCommand.init(this);
+        responseHandl.init(this);
     }
 
     public Reply replyToButtons() {
