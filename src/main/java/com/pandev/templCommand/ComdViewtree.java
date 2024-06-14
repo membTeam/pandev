@@ -6,14 +6,14 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 
 /**
- * Класс добавление элемента обработка введенных данных пользователем
+ * Класс вывод древовидной структуры в форматированном виде
  */
 @NoArgsConstructor
-public class ComdAddElement implements TemplCommand{
+public class ComdViewtree implements TemplCommand  {
 
     @Override
     public SendMessage applyMethod(Message mess, CommService commServ) {
         return commServ.getResponseHandl().initMessage(mess.getChatId(),
-                "Метод добавление элемента не реализован");
+                "Метод ViewTree не реализован");
     }
 }

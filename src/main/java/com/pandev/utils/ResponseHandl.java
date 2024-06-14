@@ -61,7 +61,9 @@ public class ResponseHandl {
 
         switch (chatStates.get(chatId)) {
             case AWAITING_NAME -> replyToName(message);
-            case AWAITING_COMMAND -> replyToCommand(message); //  replyToCommand(message);
+            case AWAITING_COMMAND,
+                 AWAITING_ADDELEMENT,
+                 AWAITING_REMOVEELEMENT -> replyToCommand(message);
             default -> unexpectedMessage(chatId);
         }
     }
@@ -130,17 +132,13 @@ public class ResponseHandl {
 
     public void replyToCommand(Message message) {
 
-        // Ответное сообщение от пользователя
+        /**
+         * Ответное сообщение от пользователя на команды: /removeElement, /addElement
+        */
         if (message.getText().charAt(0) != '/') {
-                /*
-                (chatStates.get(message.getChatId()).equals(UserState.AWAITING_ADDELEMENT)
-                    || chatStates.get(message.getChatId()).equals(UserState.AWAITING_REMOVEELEMENT))) {
-                 */
             if (chatStates.get(message.getChatId()).equals(UserState.AWAITING_ADDELEMENT)) {
-                message.setText("/addElement " +  message.getText());
-            }
-
-            if (chatStates.get(message.getChatId()).equals(UserState.AWAITING_REMOVEELEMENT)) {
+                message.setText("/addElement " + message.getText());
+            } else if (chatStates.get(message.getChatId()).equals(UserState.AWAITING_REMOVEELEMENT)) {
                 message.setText("/removeElement " + message.getText());
             } else {
                 chatStates.put(message.getChatId(), UserState.AWAITING_COMMAND);
@@ -148,17 +146,20 @@ public class ResponseHandl {
                 return;
             }
 
-            var res = getCommCommand().preparationClass(message);
+            sender.execute(getCommCommand().preparationClass(message));
 
-        }
+            chatStates.put(message.getChatId(), UserState.AWAITING_COMMAND);
 
-        switch (message.getText()) {
-            case "/removeElement", "/addElement" -> replyMessageToUser(message);
-            case "/help" -> sender.execute(getCommCommand().preparationClass(message));
-            case "/viewTree" -> sender.execute(getCommCommand().preparationClass(message));
-            default -> unexpectedMessage(message.getChatId());
+        } else {
+            switch (message.getText()) {
+                case "/removeElement", "/addElement" -> replyMessageToUser(message);
+                case "/help" -> sender.execute(getCommCommand().preparationClass(message));
+                case "/viewTree" -> sender.execute(getCommCommand().preparationClass(message));
+                default -> unexpectedMessage(message.getChatId());
+            }
         }
     }
+
 
     /**
      * Инициализация страта

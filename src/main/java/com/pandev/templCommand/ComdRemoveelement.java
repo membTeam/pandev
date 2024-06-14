@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
  * Класс удаление элемента. Обработка данных введенных пользователем
  */
 @NoArgsConstructor
-public class ComdRemoveElement implements TemplCommand {
+public class ComdRemoveelement implements TemplCommand {
 
     @Override
     public SendMessage applyMethod(Message mess, CommService commServ) {

@@ -49,7 +49,15 @@ public class CommCommand implements CommService {
      * @return
      */
     public SendMessage preparationClass(Message message) {
-        var strCommand = String.format("Comd%s", lowercaseFirstLetter(message.getText()));
+        String strCommandFromMessage;
+        int indexSpace = message.getText().indexOf(' '); // разделитель конманты и аргументов команды
+        if (indexSpace > 0) {
+            strCommandFromMessage = message.getText().substring(0, indexSpace);
+        } else {
+            strCommandFromMessage = message.getText();
+        }
+
+        var strCommand = String.format("Comd%s", lowercaseFirstLetter(strCommandFromMessage));
         var pathClass = String.format("%s.%s",
                 this.getClass().getPackageName(), strCommand);
 
