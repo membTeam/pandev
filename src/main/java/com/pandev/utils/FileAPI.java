@@ -17,12 +17,15 @@ public class FileAPI {
 
     private final Path pathLoadData;
     private final Path pathDir;
+    private final Path pathDirMessage;
 
     public FileAPI(@Value("${file.load-data}") String file,
-                   @Value("${directory.load-data}") String dir
+                   @Value("${directory.load-data}") String dir,
+                   @Value("${directory-txt-message}") String dirMessage
                    ) {
         pathLoadData = Paths.get(dir + '/' + file);
         pathDir = Paths.get(dir);
+        pathDirMessage = Paths.get(dirMessage);
     }
 
     /**
@@ -45,7 +48,7 @@ public class FileAPI {
      */
     public String loadDataFromFile(String fileName) throws IOException {
 
-        Path path = pathDir.resolve(fileName);
+        Path path = pathDirMessage.resolve(fileName);
         byte[] byteFromFile = Files.readAllBytes(path);
 
         return new String(byteFromFile);
