@@ -14,7 +14,7 @@ public class ComdHelp implements TemplCommand {
 
         String text;
 
-        var file = Constants.comd_help;
+        var file = Constants.COMD_HELP;
         long chatId = mess.getChatId();
 
         try {
