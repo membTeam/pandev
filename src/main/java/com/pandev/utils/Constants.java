@@ -3,7 +3,7 @@ package com.pandev.utils;
 public class Constants {
     public static final String START_DESCRIPTION = "Starts the bot";
 
-    public static final String FILE_START_NOT_REGISTER_USER = "start-text";
+    public static final String FILE_START_NOT_REGISTER_USER = "start-text.txt";
     public static final String FILE_START_REGISTER_USER = "start-register-user.txt";
     public static final String FILE_ADD_ELEMENT = "comd_addelement.txt";
     public static final String FILE_REMOVE_ELEMENT = "comd_removeelement.txt";
