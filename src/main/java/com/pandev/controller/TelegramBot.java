@@ -1,6 +1,7 @@
 package com.pandev.controller;
 
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.Constants;
 import com.pandev.utils.FileAPI;
@@ -29,6 +30,9 @@ public class TelegramBot extends AbilityBot {
     private final String userName;
 
     @Getter
+    private final TelegramChatRepository telegramChatRepo;
+
+    @Getter
     private final FileAPI fileAPI;
 
     @Getter
@@ -37,10 +41,11 @@ public class TelegramBot extends AbilityBot {
     @Getter
     private CommCommand commCommand;
 
-    public TelegramBot(@Value("${BOT_TOKEN}") String token, FileAPI fileAPI,
+    public TelegramBot(@Value("${BOT_TOKEN}") String token, TelegramChatRepository telegramChatRepo, FileAPI fileAPI,
                        GroupsRepository groupRepo,
                        CommCommand commCommand ){
         super(token, "userpandev");
+        this.telegramChatRepo = telegramChatRepo;
         this.fileAPI = fileAPI;
 
         this.userName = "userpandev";
@@ -61,14 +66,6 @@ public class TelegramBot extends AbilityBot {
 
         return Reply.of(action, Flag.TEXT,upd -> responseHandl.userIsActive(getChatId(upd)));
     }
-
-
-    /*public Reply replyToButtons() {
-        BiConsumer<BaseAbilityBot, Update> action =
-                    (abilityBot, upd) -> responseHandl.replyToButtons(getChatId(upd), upd.getMessage());
-
-        return Reply.of(action, Flag.TEXT,upd -> responseHandl.userIsActive(getChatId(upd)));
-    }*/
 
     public Ability startBot() {
         return Ability

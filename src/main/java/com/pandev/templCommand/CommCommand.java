@@ -45,21 +45,15 @@ public class CommCommand implements CommService {
 
     /**
      * Создание объекта на основе методов рефлекции
-     * @param message
+     * @param message ответное сообщение пользователя
+     * @param strCommand строковый идентификатор команды
      * @return
      */
-    public SendMessage preparationClass(Message message) {
-        String strCommandFromMessage;
-        int indexSpace = message.getText().indexOf(' '); // разделитель конманты и аргументов команды
-        if (indexSpace > 0) {
-            strCommandFromMessage = message.getText().substring(0, indexSpace);
-        } else {
-            strCommandFromMessage = message.getText();
-        }
+    public SendMessage initMessageFromStrCommand(Message message, String strCommand) {
 
-        var strCommand = String.format("Comd%s", lowercaseFirstLetter(strCommandFromMessage));
+        var strFormCommand = String.format("Comd%s", lowercaseFirstLetter(strCommand));
         var pathClass = String.format("%s.%s",
-                this.getClass().getPackageName(), strCommand);
+                this.getClass().getPackageName(), strFormCommand);
 
         try {
             Class clazz = Class.forName(pathClass);
