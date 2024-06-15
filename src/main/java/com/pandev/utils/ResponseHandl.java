@@ -85,7 +85,7 @@ public class ResponseHandl {
         switch (message.getText()) {
             case COMD_REMOVE_ELEMENT, COMD_ADD_ELEMENT -> sendMessageToUser(message);
             case COMD_HELP, COMD_VIEW_TREE -> useTemplCommand(message);
-            case COMD_START -> sender.execute(initMessage(message.getChatId(), COMD_HELP));
+            case COMD_START -> sender.execute(initMessage(message.getChatId(), "Вы уже в системе. Список команд: /help"));
             default -> unexpectedMessage(message.getChatId());
         }
     }
