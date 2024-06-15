@@ -28,6 +28,23 @@ public class ResponseHandl {
     private final Map<Long, UserState> chatStates;
     private TelegramBot telegramBot;
 
+    public ResponseHandl(SilentSender sender, DBContext db, GroupsRepository repo) {
+        this.sender = sender;
+        //this.chatStates = db.getMap(Constants.CHAT_STATES);
+
+        chatStates = new HashMap<>();
+
+        this.groupRepo = repo;
+    }
+
+    /**
+     * Инициализация TelegramBot, который используется как источник для bean objects
+     * @param telegramBot
+     */
+    public void init(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
+    }
+
     private CommCommand getCommonCommand() {
         return telegramBot.getCommCommand();
     }
@@ -50,21 +67,11 @@ public class ResponseHandl {
         return telegramBot.getFileAPI();
     }
 
-    public void init(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
-
-    public ResponseHandl(SilentSender sender, DBContext db, GroupsRepository repo) {
-        this.sender = sender;
-        //this.chatStates = db.getMap(Constants.CHAT_STATES);
-
-        chatStates = new HashMap<>();
-
-        this.groupRepo = repo;
-    }
 
     /**
-     * Источник вызова метода: replyToDistributionMess
+     * Обработка на основе текущего состояния из chatStates
+     * Состояние NONE используется для обработки введенных команд
+     * Остальные состояния для обработки ответа на приглашение ввода параметра
      * @param message
      */
     private void replyToMess(Message message) {
@@ -75,23 +82,31 @@ public class ResponseHandl {
 
         switch (chatStates.get(message.getChatId())) {
             case AWAITING_NAME -> replyToName(message);
-            case AWAITING_ADDELEMENT,
-                 AWAITING_REMOVEELEMENT -> addOrRemoveElement(message);
+            case AWAITING_ADD_ELEMENT,
+                 AWAITING_REMOVE_ELEMENT -> addOrRemoveElement(message);
             default -> replyToCommand(message);
         }
     }
 
+    /**
+     * Обработка команд пользователя.
+     * Не верный ввод команды обрабатывается в unexpectedCommand
+     * @param message
+     */
     private void replyToCommand(Message message) {
         switch (message.getText()) {
             case COMD_REMOVE_ELEMENT, COMD_ADD_ELEMENT -> sendMessageToUser(message);
             case COMD_HELP, COMD_VIEW_TREE -> useTemplCommand(message);
-            case COMD_START -> sender.execute(initMessage(message.getChatId(), "Вы уже в системе. Список команд: /help"));
-            default -> unexpectedMessage(message.getChatId());
+            case COMD_START -> sender.execute(
+                    initMessage(message.getChatId(), "Вы уже в системе. Список команд: /help"));
+
+            default -> unexpectedCommand(message.getChatId());
         }
     }
 
     /**
-     * Использование шаблона команд на основе рефлексии
+     * Обработка сообщений на основе шаблона команд.
+     * Сообщения, которые не предназначены для изменения БД
      * @param message
      */
     private void useTemplCommand(Message message) {
@@ -99,40 +114,63 @@ public class ResponseHandl {
         sender.execute(res);
     }
 
+    /**
+     * На основе шаблона команд -> создание класса-обработчика для ответного сообщения.
+     * Исключения перехватываются в методе initMessageFromStrCommand.
+     * Эти классы изменяют состояние БД
+     * @param message
+     */
     private void addOrRemoveElement(Message message) {
 
         String strCommand;
-        if (chatStates.get(message.getChatId()).equals(UserState.AWAITING_ADDELEMENT)) {
+        var chatStateUser = chatStates.get(message.getChatId());
+
+        if (chatStateUser.equals(UserState.AWAITING_ADD_ELEMENT)) {
             strCommand = COMD_ADD_ELEMENT;
-        } else if (chatStates.get(message.getChatId()).equals(UserState.AWAITING_REMOVEELEMENT)) {
+        } else if (chatStateUser.equals(UserState.AWAITING_REMOVE_ELEMENT)) {
             strCommand = COMD_REMOVE_ELEMENT;
         } else {
             var text = "Не верный формат команды.\nДля списка команд используйте /help";
             var respMessage = initMessage(message.getChatId(), text);
 
+            chatStates.put(message.getChatId(), UserState.NONE);
             sender.execute(respMessage);
+
             return;
         }
 
-        sender.execute(getCommonCommand().initMessageFromStrCommand(message, strCommand));
+        sender.execute(
+                    getCommonCommand().initMessageFromStrCommand(message, strCommand) );
+
         chatStates.put(message.getChatId(), UserState.NONE);
     }
 
+    /**
+     * Остановка telegramBot и закрытие ВСЕХ ресурсов.
+     * Повторный вход только через кнопку start или команду /start
+     * @param chatId
+     */
     private void stopChat(long chatId) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText("Спасибо, что использовали наш TelegramBot\nНажмите /start чтобы повторить общение.");
+        SendMessage sendMessage = initMessage(chatId,
+                "Спасибо, что использовали наш TelegramBot" +
+                "\nНажмите /start чтобы повторить общение.");
+
         chatStates.remove(chatId);
         sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
 
         sender.execute(sendMessage);
     }
 
+    /**
+     * Регистрация нового пользователя в БД. Из message извлекается имя пользователя.
+     * В заключении устанавливается состояние NONE.
+     * Это позволит вводить команды в telegramBot
+     * @param message
+     */
     @Transactional
     private void replyToName(Message message) {
         var chatId = message.getChatId();
-        SendMessage respMessage = new SendMessage();
-        respMessage.setChatId(chatId);
+        SendMessage respMessage = initMessage(chatId, null);
 
         try {
             var user = TelegramChat.builder()
@@ -154,53 +192,49 @@ public class ResponseHandl {
         sender.execute(respMessage);
     }
 
+
     /**
      * Не опознанная команда сообщения
      * @param chatId
      */
-    private void unexpectedMessage(long chatId) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText("Команда не опознана.");
-        sender.execute(sendMessage);
+    private void unexpectedCommand(long chatId) {
+        sender.execute(initMessage(chatId, "Команда не опознана."));
     }
 
     /**
-     * Изменение ствтуса, отправить сообщение из файла и изменить статуса
-     * используется только для "/removeElement", "/addElement"
+     * Отправить сообщение из файла и изменить статус пользователя.
+     * Используется только для команд: /removeElement, /addElement
      * @param message
      */
     private void sendMessageToUser(Message message) {
         var chatId = message.getChatId();
-
-        var text = message.getText();
         String textFromFile;
 
-        var file = switch (text) {
+        var file = switch (message.getText()) {
             case COMD_REMOVE_ELEMENT -> {
-                chatStates.put(chatId, UserState.AWAITING_REMOVEELEMENT);
-                yield Constants.FILE_REMOVEELEMENT;
+                chatStates.put(chatId, UserState.AWAITING_REMOVE_ELEMENT);
+                yield FILE_REMOVE_ELEMENT;
             }
             case COMD_ADD_ELEMENT -> {
-                chatStates.put(chatId, UserState.AWAITING_ADDELEMENT);
-                yield Constants.FILE_ADDELEMENT;}
-            default -> Constants.FILE_EMPTY;
+                chatStates.put(chatId, UserState.AWAITING_ADD_ELEMENT);
+                yield FILE_ADD_ELEMENT;}
+            default -> FILE_DEFAULT;
         };
 
         try {
             textFromFile = getFileApi().loadDataFromFile(file);
         } catch (Exception ex) {
             chatStates.put(chatId, UserState.NONE);
-            unexpectedMessage(chatId);
+            unexpectedCommand(chatId);
             return;
         }
 
         sender.execute(initMessage(chatId, textFromFile));
-
     }
 
     /**
-     * Инициализация страта
+     * Инициализация старта. Если пользователь не зарегистрирован, создается приглашение ввести имя.
+     * Ответ пользователя обрабатывается в методе replyToName где будет регистрация в БД.
      * @param chatId
      */
     public void replyToStart(long chatId) {
@@ -245,7 +279,7 @@ public class ResponseHandl {
     }
 
     /**
-     * Создание шаблона текстового сообщения по умолчанию
+     * Создание шаблона текстового сообщения.
      * @param chatId
      * @param mes
      * @return
@@ -253,7 +287,7 @@ public class ResponseHandl {
     public SendMessage initMessage(long chatId, String mes) {
         return SendMessage.builder()
                 .chatId(chatId)
-                .text(mes)
+                .text(mes == null ? "empty" : mes)
                 .build();
     }
 

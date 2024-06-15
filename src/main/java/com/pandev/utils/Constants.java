@@ -5,9 +5,9 @@ public class Constants {
 
     public static final String FILE_START_NOT_REGISTER_USER = "start-text";
     public static final String FILE_START_REGISTER_USER = "start-register-user.txt";
-    public static final String FILE_ADDELEMENT = "comd_addelement.txt";
-    public static final String FILE_REMOVEELEMENT = "comd_removeelement.txt";
-    public static final String FILE_EMPTY = "comd_empty.txt";
+    public static final String FILE_ADD_ELEMENT = "comd_addelement.txt";
+    public static final String FILE_REMOVE_ELEMENT = "comd_removeelement.txt";
+    public static final String FILE_DEFAULT = "comd_empty.txt";
     public static final String FILE_HELP = "comd_help.txt";
 
     public static final String COMD_REMOVE_ELEMENT = "/removeElement";
