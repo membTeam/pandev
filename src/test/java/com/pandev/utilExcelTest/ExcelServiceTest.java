@@ -19,7 +19,7 @@ public class ExcelServiceTest {
     public void readFromExcel() {
         var res = excelService.readFromExcel("test-excel.xlsx");
 
-        var resFromLs = res.get(0);
+        var resSave = excelService.saveExcelDataToDB(res);
 
         excelService.loadExcelDataToDB(res);
 

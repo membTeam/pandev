@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -13,6 +16,27 @@ public class GroupsRepositoryTest {
 
     @Autowired
     private GroupsRepository groupsRepo;
+
+
+    @Test
+    public void findAllByParentnodeIn() {
+
+        List<Integer> ls = List.of(7);
+        var res = groupsRepo.findAllByParentnodeInAndOrdernumNot(ls,0);
+
+        assertTrue(res.size()==0);
+
+    }
+
+    @Test
+    public void findAllByTxtgroupIn() {
+        List<String> ls = List.of("java","Управленцы" );
+
+        var res = groupsRepo.findAllByTxtgroupIn(ls);
+
+        assertTrue(res.size()>0);
+
+    }
 
 
     @Test
@@ -38,7 +62,7 @@ public class GroupsRepositoryTest {
 
     @Test
     public void findAllGroupsBytxtGroup() {
-        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130");
+        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130", 100);
 
         assertTrue(res.size()>0);
     }

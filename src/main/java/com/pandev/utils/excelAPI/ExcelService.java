@@ -5,11 +5,12 @@ import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.DTOresult;
+import com.pandev.utils.InitListGroups;
 import com.pandev.utils.ResponseHandl;
+import jakarta.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.XLSBUnsupportedException;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ExcelService {
@@ -55,9 +59,8 @@ public class ExcelService {
 
                 var cell1 = row.getCell(0).getRichStringCellValue().getString();
                 var cell2 = row.getCell(1).getRichStringCellValue().getString();
-                var cell3 = row.getCell(2).getRichStringCellValue().getString();
 
-                var dto = new RecordDTOexcel(cell1, cell2, cell3);
+                var dto = new RecordDTOexcel(cell1, cell2);
                 resultData.add(dto);
             }
 
@@ -68,12 +71,139 @@ public class ExcelService {
         return resultData;
     }
 
+
+    @Transactional
+    private DTOresult saveGroupParentFromExcel(List<RecordDTOexcel> lsRecordDTOExcel) {
+        var setStrParentNode = lsRecordDTOExcel.stream()
+                .map(item-> item.parentNode()).collect(Collectors.toSet()) ;
+
+        List<Groups> lsGroups = new ArrayList<>();
+
+        var valKeyId = new Object(){
+            private int orderNum = -1;
+            public int getRootId(){ return  --orderNum;}
+            public int getParentId(){ return  orderNum;}
+        };
+
+        /**
+         * Проверка наличия записей в БД
+         */
+        List<String> lsStrParenNode = new ArrayList<>(setStrParentNode.stream().toList());
+        var lsExists = groupsRepo.findAllByTxtgroupIn(lsStrParenNode);
+
+        // Удаление parentNode, которые есть в БД
+        if (lsExists.size() > 0) {
+            lsExists.forEach(item-> lsStrParenNode.remove(item.getTxtgroup()));
+//            List<String> buf = lsExists.stream().map(item-> item.getTxtgroup()).toList();
+            //buf.forEach(item-> lsStrParenNode.remove(item));
+//            lsStrParenNode.removeAll(buf);
+        }
+
+        lsStrParenNode.forEach(item-> {
+            lsGroups.add( Groups.builder()
+                    .rootnode(valKeyId.getRootId())
+                    .parentnode(valKeyId.getParentId())
+                    .ordernum(0)
+                    .levelnum(0)
+                    .txtgroup(item)
+                    .build() );
+        });
+
+        try {
+
+            var resSave = groupsRepo.saveAll(lsGroups);
+
+            resSave.forEach(item -> {
+                item.setRootnode(item.getId());
+                item.setParentnode(item.getId());
+            });
+
+            var afterUpdate = groupsRepo.saveAll(resSave);
+
+            /*Map<String, Groups> mapResult = new HashMap<>();
+            afterUpdate.forEach(item-> mapResult.put(item.getTxtgroup(), item));*/
+
+            return new DTOresult(true, afterUpdate);
+
+        } catch (Exception ex) {
+            return new DTOresult(false, ex.getMessage());
+        }
+
+    }
+
+    public DTOresult saveExcelDataToDB(List<RecordDTOexcel> lsRecordDTOExcel) {
+
+        var resSaveGroup = saveGroupParentFromExcel(lsRecordDTOExcel);
+        if (!resSaveGroup.res()) {
+            return new DTOresult(false, resSaveGroup.value().toString());
+        }
+
+        List<Groups> lsForOffSetOrdernum = new ArrayList<>();
+
+//        var mapGroup = (Map<String, Groups>) resSaveGroup.value();
+
+        var orderNumObj = new Object(){
+            private int orderStart;
+            private int orderNum;
+            public void setStartData(int startData) {
+                orderStart = startData;
+                orderNum = startData;
+            }
+            public int getOrderNum(){ return  ++orderNum;}
+            public int getDiff() {return orderNum - orderStart;}
+        };
+
+        List<Groups> lsGroups = new ArrayList<>();
+
+        try {
+            for (Groups parentNode : (List<Groups>) resSaveGroup.value()  ) {
+                var lsSubNodeForParentNode = lsRecordDTOExcel.stream()
+                        .filter(item -> item.parentNode().equals(parentNode.getTxtgroup())).toList();
+
+                // Настройка счетчика orderNum
+                orderNumObj.setStartData(parentNode.getOrdernum());
+
+                var levelNum = parentNode.getLevelnum() + 1;
+
+                lsSubNodeForParentNode.forEach(itembuffer -> {
+                    lsGroups.add(Groups.builder()
+                            .rootnode(parentNode.getRootnode())
+                            .parentnode(parentNode.getId())
+                            .ordernum(orderNumObj.getOrderNum())
+                            .levelnum(levelNum)
+                            .txtgroup(itembuffer.groupNode())
+                            .build());
+                });
+
+                var lsForUpdateOrderNum =
+                        groupsRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup(), parentNode.getRootnode());
+
+                if (lsForUpdateOrderNum.size() > 0) {
+                    List<Groups> lsGroupsOffSet = InitListGroups.convListObjToListGroups(lsForUpdateOrderNum);
+                    lsGroupsOffSet.forEach(item -> item.setOrdernum(orderNumObj.getDiff()));
+
+                    lsForOffSetOrdernum.addAll(lsGroupsOffSet);
+
+                    groupsRepo.saveAll(lsForOffSetOrdernum);
+                }
+            }
+
+            groupsRepo.saveAll(lsGroups);
+
+            return new DTOresult(true, "ok");
+
+        } catch (Exception ex) {
+            return new DTOresult(false, ex.getMessage());
+        }
+
+    }
+
     public DTOresult loadExcelDataToDB(List<RecordDTOexcel> lsRecordDTOExcel) {
 
         List<String> lsErr = new ArrayList<>();
         try {
 
-            lsRecordDTOExcel.stream().forEach(item -> {
+            /*lsRecordDTOExcel.stream().forEach(item -> {
                 var strRoot = item.rootNode();
                 var strParent = item.parentNode();
                 var strGroup = item.node();
@@ -109,7 +239,7 @@ public class ExcelService {
                     throw new IllegalArgumentException(resSaveGroup.value().toString());
                 }
 
-            });
+            });*/
         } catch (Exception ex) {
             lsErr.add(ex.getMessage());
         }

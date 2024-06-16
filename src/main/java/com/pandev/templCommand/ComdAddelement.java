@@ -110,7 +110,7 @@ public class ComdAddelement implements TemplCommand{
 
             // Массив элементов для смещения в структуре дерева
             // относительно родительского узла
-            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup());
+            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup(), parentNode.getRootnode());
             if (lsObjForMoved.size() > 0) {
                 List<Groups> lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
                 lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() + 1));

@@ -18,7 +18,7 @@ public class GroupsRepository3Test {
 
     @Test
     public void convListObjToListGroups_notData() {
-        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement1300");
+        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement1300", 100);
 
         var resConv = InitListGroups.convListObjToListGroups(res);
 
@@ -28,7 +28,7 @@ public class GroupsRepository3Test {
 
     @Test
     public void convListObjToListGroups() {
-        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130");
+        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130", 100);
 
         var resConv = InitListGroups.convListObjToListGroups(res);
 

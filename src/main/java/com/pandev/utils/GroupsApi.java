@@ -16,9 +16,8 @@ import java.util.List;
 public class GroupsApi {
     private GroupsRepository groupRepo;
 
-    public GroupsApi(TelegramBot telegramBot) {
-        groupRepo = telegramBot.getCommCommand().getGroupsRepo();
-
+    public GroupsApi(GroupsRepository groupRepo) {
+        this.groupRepo = groupRepo;
     }
 
     @Transactional
@@ -62,7 +61,7 @@ public class GroupsApi {
                     .txtgroup(strParent)
                     .build();
 
-            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup());
+            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup(), parentNode.getRootnode());
             if (lsObjForMoved.size() > 0) {
                 List<Groups> lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
                 lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() + 1));
