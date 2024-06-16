@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Класс добавления элементов
- * Два обработчика: добавление корневого или дочернего элементов
+ * Два обработчика: добавление корневого или дочернего элемента
  */
 @NoArgsConstructor
 public class ComdAddelement implements TemplCommand{
@@ -40,8 +40,8 @@ public class ComdAddelement implements TemplCommand{
 
         try {
             Groups groups = Groups.builder()
-                    .parentnode(-1)
                     .rootnode(-1)
+                    .parentnode(-1)
                     .ordernum(0)
                     .levelnum(0)
                     .txtgroup(arr[0])
@@ -81,40 +81,32 @@ public class ComdAddelement implements TemplCommand{
         // Родительский элемент
         var parentNode = groupRepo.findByTxtgroup(arr[0]);
         if (parentNode == null) {
-            result.setText("Главный элемент не найден:" + arr[0]);
+            result.setText("Нет родительского элемента: " + arr[0]);
             return result;
         }
 
         try {
-            // Массив элементов для смещения в структуре дерева
-            // относительно родительского узла
-            List<Groups> lsGroups = null;
-            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup());
-            if (lsObjForMoved.size() > 0) {
-                lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
-            }
-
             // Позиция встраиваемого элемента в общей структуре дерева
-            // относительно родительского элемента
-            int subOrderNum = lsGroups == null
-                    ? parentNode.getOrdernum() + 1
-                    : lsGroups.stream().mapToInt(item -> item.getOrdernum()).min().orElseThrow();
-
-            // Изменение позиции элементов в структуре дерева
-            // и сохранение в БД
-            if (lsGroups != null) {
-                lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() + 1));
-                groupRepo.saveAll(lsGroups);
-            }
+            // относительно корневого элемента
+            int subOrderNum = groupRepo.maxOrdernum(parentNode.getRootnode(), parentNode.getId());
 
             // Встраиваемый элемент
             Groups groups = Groups.builder()
                     .rootnode(parentNode.getRootnode())
                     .parentnode(parentNode.getId())
-                    .ordernum(subOrderNum)
+                    .ordernum(++subOrderNum)
                     .levelnum(parentNode.getLevelnum() + 1)
                     .txtgroup(arr[1])
                     .build();
+
+            // Массив элементов для смещения в структуре дерева
+            // относительно родительского узла
+            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup());
+            if (lsObjForMoved.size() > 0) {
+                List<Groups> lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
+                lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() + 1));
+                groupRepo.saveAll(lsGroups);
+            }
 
             groupRepo.save(groups);
 

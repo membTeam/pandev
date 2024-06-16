@@ -15,6 +15,17 @@ public class GroupsRepository3Test {
     @Autowired
     private GroupsRepository groupsRepo;
 
+
+    @Test
+    public void convListObjToListGroups_notData() {
+        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement1300");
+
+        var resConv = InitListGroups.convListObjToListGroups(res);
+
+        assertTrue(resConv.size()==0);
+    }
+
+
     @Test
     public void convListObjToListGroups() {
         var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130");

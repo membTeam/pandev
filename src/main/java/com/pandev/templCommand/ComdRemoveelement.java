@@ -1,7 +1,6 @@
 package com.pandev.templCommand;
 
 import com.pandev.entities.Groups;
-import com.pandev.utils.InitListGroups;
 import jakarta.transaction.Transactional;
 import lombok.NoArgsConstructor;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -34,7 +33,7 @@ public class ComdRemoveelement implements TemplCommand {
 
             if (currElement.getOrdernum() == 0) {
                 groupRepo.deleteAll(
-                        groupRepo.findAllElementByRoorNode(currElement.getRootnode()) );
+                        groupRepo.findAllElementByRootNode(currElement.getRootnode()) );
 
                 result.setText("Выполнено ПОЛНОЕ удаление всех элементов корневого узла");
                 return  result;

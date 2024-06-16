@@ -16,8 +16,16 @@ public class GroupsRepositoryTest {
 
 
     @Test
+    public void maxOrdernum() {
+        var res = groupsRepo.maxOrdernum(100, 130);
+
+        assertNotNull(res);
+    }
+
+
+    @Test
     public void findAllElementByRoorNode() {
-        var res = groupsRepo.findAllElementByRoorNode(100);
+        var res = groupsRepo.findAllElementByRootNode(100);
         assertTrue(res.size()>0);
     }
 
