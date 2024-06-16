@@ -67,6 +67,17 @@ public class ResponseHandl {
         return telegramBot.getFileAPI();
     }
 
+    private void replyToCancel(Message mess) {
+        var message = initMessage(mess.getChatId(), null);
+
+        try {
+            message.setText(getFileApi().loadDataFromFile(FILE_HELP));
+        } catch (Exception ex) {
+            message.setText("Ошибка инициализации сообщения");
+        }
+
+        sender.execute(message);
+    }
 
     /**
      * Обработка на основе текущего состояния из chatStates
@@ -99,6 +110,7 @@ public class ResponseHandl {
             case COMD_HELP, COMD_VIEW_TREE -> useTemplCommand(message);
             case COMD_START -> sender.execute(
                     initMessage(message.getChatId(), "Вы уже в системе. Список команд: /help"));
+            case COMD_CANCEL -> replyToCancel(message);
 
             default -> unexpectedCommand(message.getChatId());
         }
@@ -121,6 +133,11 @@ public class ResponseHandl {
      * @param message
      */
     private void addOrRemoveElement(Message message) {
+
+        if (message.getText().equals(COMD_CANCEL)) {
+            replyToCancel(message);
+            return;
+        }
 
         String strCommand;
         var chatStateUser = chatStates.get(message.getChatId());

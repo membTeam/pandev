@@ -16,5 +16,6 @@ public class Constants {
     public static final String COMD_VIEW_TREE = "/viewTree";
     public static final String COMD_START = "/start";
     public static final String COMD_STOP = "/stop";
+    public static final String COMD_CANCEL = "/cancel";
 
 }

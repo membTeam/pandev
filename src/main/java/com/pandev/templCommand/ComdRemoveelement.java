@@ -33,8 +33,13 @@ public class ComdRemoveelement implements TemplCommand {
             }
 
             if (currElement.getOrdernum() == 0) {
-                //groupRepo.deleteAll( groupRepo.findAll() )
+                groupRepo.deleteAll(
+                        groupRepo.findAllElementByRoorNode(currElement.getRootnode()) );
+
+                result.setText("Выполнено ПОЛНОЕ удаление всех элементов корневого узла");
+                return  result;
             }
+
             List<Groups> lsGroups = groupRepo.findListGroupsByOrdernum(currElement.getRootnode(), currElement.getOrdernum());
 
             groupRepo.deleteById(currElement.getId());

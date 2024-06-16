@@ -42,7 +42,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
             "order by ordernum desc", nativeQuery = true)
     List<List<Object>> findAllGroupsBytxtGroup(String txtgroup);
 
-    @Query("select g from Groups g where g.rootnode = :rootnode and g.ordernum >= :ordernum order by g.ordernum")
+    @Query("select g from Groups g where g.rootnode = :rootnode and g.ordernum > :ordernum order by g.ordernum")
     List<Groups> findListGroupsByOrdernum(Integer rootnode, int ordernum);
 
     @Query("select g from Groups g where g.rootnode = :rootnode")
