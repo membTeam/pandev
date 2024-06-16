@@ -1,5 +1,6 @@
 package com.pandev.templCommand;
 
+import com.pandev.utils.GroupsApi;
 import com.pandev.utils.ResponseHandl;
 import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
@@ -33,8 +34,8 @@ public class CommCommand implements CommService {
      */
     public void init(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
-    }
 
+    }
 
     private static String lowercaseFirstLetter(String word) {
         if (word.charAt(0) == '/') {
@@ -81,5 +82,10 @@ public class CommCommand implements CommService {
     @Override
     public FileAPI getFileAPI() {
         return fileAPI;
+    }
+
+    @Override
+    public GroupsApi getGroupApi() {
+        return telegramBot.getGroupsApi();
     }
 }

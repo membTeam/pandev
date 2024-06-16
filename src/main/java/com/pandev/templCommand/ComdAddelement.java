@@ -39,7 +39,10 @@ public class ComdAddelement implements TemplCommand{
         }
 
         try {
-            Groups groups = Groups.builder()
+
+            var resSave = commServ.getGroupApi().saveRootNode(arr[0]);
+
+            /*Groups groups = Groups.builder()
                     .rootnode(-1)
                     .parentnode(-1)
                     .ordernum(0)
@@ -51,9 +54,15 @@ public class ComdAddelement implements TemplCommand{
             groupSave.setRootnode(groupSave.getId());
             groupSave.setParentnode(groupSave.getId());
 
-            groupRepo.save(groupSave);
+            groupRepo.save(groupSave);*/
 
-            result.setText("Создан корневой элемент: " + groupSave.getTxtgroup());
+            result.setText(
+                    resSave.res()
+                            ? "Создан корневой элемент: " + arr[0]
+                            : resSave.value().toString()
+            );
+
+            //result.setText("Создан корневой элемент: " + groupSave.getTxtgroup());
 
         } catch (Exception ex) {
             result.setText("Неизвестная ошибка записи в БД");

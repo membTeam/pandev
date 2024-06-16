@@ -286,8 +286,27 @@ public class ResponseHandl {
      * @param update
      */
     public void replyToDistributionMess(Update update) {
-     if (update != null && update.hasMessage() && update.getMessage().hasText()) {
-            replyToMess(update.getMessage());
+        if (update != null && update.hasMessage()) {
+            Message message = update.getMessage();
+
+            if (message.hasText()) {
+                replyToMess(message);
+            } else if (message.hasDocument()) {
+                replyToDocument(message);
+            }
+        }
+    }
+
+    private void replyToDocument(Message message) {
+        try {
+            var resFile = telegramBot.downloadDocument(message);
+
+            sender.execute(
+                    initMessage(message.getChatId(), "Файл загружен")  );
+
+        } catch (Exception ex) {
+            sender.execute(
+                    initMessage(message.getChatId(), "Не известная ошибка загрузки документа") );
         }
     }
 
