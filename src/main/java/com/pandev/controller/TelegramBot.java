@@ -9,6 +9,7 @@ import com.pandev.utils.Constants;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.GroupsApi;
 import com.pandev.utils.ResponseHandl;
+import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,12 @@ public class TelegramBot extends AbilityBot {
     private final String externameResource;
 
     @Getter
+    private final GroupsRepository groupsRepo;
+
+    @Getter
+    private final ExcelService excelService;
+
+    @Getter
     private final GroupsApi groupsApi;
 
     @Getter
@@ -54,13 +61,15 @@ public class TelegramBot extends AbilityBot {
     private CommCommand commCommand;
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
-                       @Value("${path-external-resource}") String eternameResource, GroupsApi groupsApi,
+                       @Value("${path-external-resource}") String eternameResource, GroupsRepository groupsRepo, ExcelService excelService, GroupsApi groupsApi,
                        TelegramChatRepository telegramChatRepo, FileAPI fileAPI,
                        GroupsRepository groupRepo,
                        CommCommand commCommand ){
         super(token, "userpandev");
 
         this.externameResource = eternameResource;
+        this.groupsRepo = groupsRepo;
+        this.excelService = excelService;
         this.groupsApi = groupsApi;
         this.telegramChatRepo = telegramChatRepo;
         this.fileAPI = fileAPI;
@@ -73,8 +82,9 @@ public class TelegramBot extends AbilityBot {
 
     @PostConstruct
     private void init() {
-        commCommand.init(this);
+        commCommand.init(this, excelService);
         responseHandl.init(this);
+        //excelService.init(groupsRepo);
     }
 
     public File downloadDocument(Message message) throws TelegramApiException {

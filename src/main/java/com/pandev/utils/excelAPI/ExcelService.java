@@ -12,15 +12,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ExcelService {
@@ -28,17 +29,15 @@ public class ExcelService {
     private final String PATH_DIR_EXTENAL;
 
     private final GroupsRepository groupsRepo;
-    private ResponseHandl responseHandl;
-    private CommCommand commCommand;
 
-    public ExcelService(@Value("${path-external-resource}") String dirExtenal, TelegramBot telegramBot) {
+    public ExcelService(@Value("${path-external-resource}") String dirExtenal, GroupsRepository groupsRepo) {
         PATH_DIR_EXTENAL = dirExtenal;
-
-        this.commCommand = telegramBot.getCommCommand();
-        this.responseHandl = commCommand.getResponseHandl();
-        this.groupsRepo = commCommand.getGroupsRepo();
-
+        this.groupsRepo = groupsRepo;
     }
+
+    /*public void init(GroupsRepository groupsRepo) {
+
+    }*/
 
     public List<RecordDTOexcel> readFromExcel(String strFile) {
         var path = Paths.get(PATH_DIR_EXTENAL, strFile);

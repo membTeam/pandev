@@ -20,7 +20,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     @Query(value = "select exists(select * from groups)",nativeQuery = true)
     boolean isExistsData();
 
-    @Query(value = "select new com.pandev.entities.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.ordernum")
+    @Query(value = "select new com.pandev.entities.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.rootnode, g.ordernum")
     List<GroupsDetails> getTreeData();
 
     Groups findByTxtgroup(String txtName );

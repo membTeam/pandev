@@ -22,20 +22,19 @@ public class CommCommand implements CommService {
 
     private final GroupsRepository groupsRepo;
     private final FileAPI fileAPI;
-    private final ExcelService excelService;
+
     private TelegramBot telegramBot;
 
     public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService) {
         this.groupsRepo = groupsRepo;
         this.fileAPI = fileAPI;
-        this.excelService = excelService;
     }
 
     /**
      * Дополнительная инициализация из TelegramBot
      * @param telegramBot
      */
-    public void init(TelegramBot telegramBot) {
+    public void init(TelegramBot telegramBot, ExcelService excelService) {
         this.telegramBot = telegramBot;
 
     }
@@ -73,7 +72,7 @@ public class CommCommand implements CommService {
 
     @Override
     public ExcelService getExcelService() {
-        return excelService;
+        return telegramBot.getExcelService();
     }
 
     @Override
