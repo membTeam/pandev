@@ -19,11 +19,9 @@ public class ExcelServiceTest {
     public void readFromExcel() {
         var res = excelService.readFromExcel("test-excel.xlsx");
 
-        var resSave = excelService.saveExcelDataToDB(res);
+        var resSave = excelService.saveDataByExcelToDb(res);
 
-        excelService.loadExcelDataToDB(res);
-
-        assertNotNull(res);
+        assertNotNull(resSave.res());
     }
 
 }

@@ -5,6 +5,7 @@ import com.pandev.utils.ResponseHandl;
 import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.excelAPI.ExcelService;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -21,11 +22,13 @@ public class CommCommand implements CommService {
 
     private final GroupsRepository groupsRepo;
     private final FileAPI fileAPI;
+    private final ExcelService excelService;
     private TelegramBot telegramBot;
 
-    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI) {
+    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService) {
         this.groupsRepo = groupsRepo;
         this.fileAPI = fileAPI;
+        this.excelService = excelService;
     }
 
     /**
@@ -68,6 +71,10 @@ public class CommCommand implements CommService {
         }
     }
 
+    @Override
+    public ExcelService getExcelService() {
+        return excelService;
+    }
 
     @Override
     public GroupsRepository getGroupsRepo() {

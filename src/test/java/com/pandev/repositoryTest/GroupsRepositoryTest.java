@@ -19,6 +19,21 @@ public class GroupsRepositoryTest {
 
 
     @Test
+    public void findAllGroupsByParentId() {
+        var res = groupsRepo.findAllGroupsByParentId(19, 19);
+
+        assertFalse(res.size()>0);
+    }
+
+
+    @Test
+    public void isExistsBytxtgroupAndParentnode() {
+        var res = groupsRepo.isExistsBytxtgroupAndParentnode("управленцы", 19);
+
+        assertTrue(res);
+    }
+
+    @Test
     public void findAllByParentnodeIn() {
 
         List<Integer> ls = List.of(7);
@@ -35,6 +50,7 @@ public class GroupsRepositoryTest {
         var res = groupsRepo.findAllByTxtgroupIn(ls);
 
         assertTrue(res.size()>0);
+
 
     }
 

@@ -41,6 +41,12 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
             "and rootnode = :rootId order by ordernum desc", nativeQuery = true)
     List<List<Object>> findAllGroupsBytxtGroup(String txtgroup, Integer rootId);
 
+    @Query(value = "select id, rootnode, parentnode, txtgroup, ordernum, levelnum from groups " +
+            "where ordernum > (select coalesce(max(ordernum), 2147483640) " +
+            "from groups where parentnode = :parentid ) " +
+            "and rootnode = :rootId order by ordernum desc", nativeQuery = true)
+    List<List<Object>> findAllGroupsByParentId(Integer parentid, Integer rootId);
+
 
     /**
      * Максимальное значение ordernum из дочерних записей.
@@ -65,5 +71,8 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     List<Groups> findAllByTxtgroupIn(List<String> ls);
 
     List<Groups> findAllByParentnodeInAndOrdernumNot(List<Integer> ls, int ordernum);
+
+    @Query(value = "select exists(select * from groups where txtgroup = lower(trim(:txtgroup)) and parentnode = :parentnode)", nativeQuery = true)
+    boolean isExistsBytxtgroupAndParentnode(String txtgroup, Integer parentnode);
 
 }
