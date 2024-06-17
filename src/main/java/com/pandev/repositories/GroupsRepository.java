@@ -23,7 +23,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     @Query(value = "select new com.pandev.entities.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.rootnode, g.ordernum")
     List<GroupsDetails> getTreeData();
 
-    Groups findByTxtgroup(String txtName );
+    Groups findByTxtgroup(String txtgroup );
 
     @Query(value = "select * from groups where id = (select coalesce(min(id), -1) from groups)", nativeQuery = true)
     Groups firstElement();

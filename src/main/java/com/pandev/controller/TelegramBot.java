@@ -5,15 +5,14 @@ package com.pandev.controller;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
-import com.pandev.utils.Constants;
-import com.pandev.utils.FileAPI;
-import com.pandev.utils.GroupsApi;
-import com.pandev.utils.ResponseHandl;
+import com.pandev.utils.*;
 import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
@@ -29,6 +28,7 @@ import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
@@ -84,24 +84,31 @@ public class TelegramBot extends AbilityBot {
     private void init() {
         commCommand.init(this, excelService);
         responseHandl.init(this);
-        //excelService.init(groupsRepo);
     }
 
-    public File downloadDocument(Message message) throws TelegramApiException {
+    public DTOresult downloadDocument(Message message) {
 
         var document = message.getDocument();
         var fileId = document.getFileId();
 
-        GetFile getFile = new GetFile(fileId);
+        try {
+            GetFile getFile = new GetFile(fileId);
+            File file = sender.execute(getFile);
 
-        File file = sender.execute(getFile);
+            var strFile = "temp.xlsx";
+            var pathExternale = Path.of(externameResource, strFile);
+            Files.deleteIfExists(pathExternale);
 
-        var strPathExternale = Path.of(externameResource, "temp.excel").toString();
-        java.io.File tempFile = new java.io.File(strPathExternale);
+            java.io.File tempFile = new java.io.File(pathExternale.toAbsolutePath().toString());
 
-        downloadFile(file, tempFile);
+            downloadFile(file, tempFile);
 
-        return file;
+            var lsData = excelService.readFromExcel(strFile);
+            return excelService.saveDataByExcelToDb(lsData);
+
+        } catch (Exception ex) {
+            return new DTOresult(false, ex.getMessage());
+        }
     }
 
     public Reply replyToButtons() {
@@ -110,6 +117,14 @@ public class TelegramBot extends AbilityBot {
 
         return Reply.of(action, Flag.TEXT,upd -> responseHandl.userIsActive(getChatId(upd)));
     }
+
+    public Reply replyToDocument() {
+        BiConsumer<BaseAbilityBot, Update> action =
+                (abilityBot, upd) -> responseHandl.replyToDocument(upd);
+
+        return Reply.of(action, Flag.DOCUMENT,upd -> responseHandl.userIsActive(getChatId(upd)));
+    }
+
 
     public Ability startBot() {
         return Ability

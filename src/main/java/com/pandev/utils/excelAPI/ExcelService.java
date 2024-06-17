@@ -1,12 +1,9 @@
 package com.pandev.utils.excelAPI;
 
-import com.pandev.controller.TelegramBot;
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.DTOresult;
 import com.pandev.utils.InitListGroups;
-import com.pandev.utils.ResponseHandl;
 import jakarta.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -35,10 +32,6 @@ public class ExcelService {
         this.groupsRepo = groupsRepo;
     }
 
-    /*public void init(GroupsRepository groupsRepo) {
-
-    }*/
-
     public List<RecordDTOexcel> readFromExcel(String strFile) {
         var path = Paths.get(PATH_DIR_EXTENAL, strFile);
         List<RecordDTOexcel> resultData = new ArrayList<>();
@@ -54,6 +47,10 @@ public class ExcelService {
                     continue;
                 }
 
+                if (row.getCell(0) == null) {
+                    return resultData;
+                }
+
                 var cell1 = row.getCell(0).getRichStringCellValue().getString();
                 var cell2 = row.getCell(1).getRichStringCellValue().getString();
 
@@ -61,11 +58,12 @@ public class ExcelService {
                 resultData.add(dto);
             }
 
-        } catch (Exception ex) {
-            return null;
-        }
+            return resultData;
 
-        return resultData;
+        } catch (Exception ex) {
+            resultData.clear();
+            return resultData;
+        }
     }
 
 
@@ -78,23 +76,26 @@ public class ExcelService {
     @Transactional
     public DTOresult saveGroupParentFromExcel(String strRootnode) {
 
-        /**
-         * Если есть такой узел в БД -> return groupsFromRepo
-         */
-        var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode.trim().toLowerCase());
-        if (groupsFromRepo != null) {
-            return new DTOresult(true, groupsFromRepo);
-        }
+        strRootnode = strRootnode.trim().toLowerCase();
 
-        Groups groups = Groups.builder()
+        try {
+
+            /**
+             * Если есть такой узел в БД -> return groupsFromRepo
+             */
+            var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode);
+            if (groupsFromRepo != null) {
+                return new DTOresult(true, groupsFromRepo);
+            }
+
+            Groups groups = Groups.builder()
                     .rootnode(-1)
                     .parentnode(-1)
                     .ordernum(0)
                     .levelnum(0)
-                    .txtgroup(strRootnode.trim().toLowerCase())
+                    .txtgroup(strRootnode)
                     .build();
 
-        try {
 
             var resSave = groupsRepo.save(groups);
 
@@ -124,7 +125,7 @@ public class ExcelService {
         try {
             // Исключается дублирование txtgroup and parentNode
             if (groupsRepo.isExistsBytxtgroupAndParentnode(subNode.getTxtgroup(), subNode.getParentnode())) {
-                return new DTOresult(true, "ok");
+                return new DTOresult(false, "Повторный ввод субЭлемента");
             }
 
             // Позиция встраиваемого элемента в общей структуре дерева
@@ -194,7 +195,7 @@ public class ExcelService {
                 }
             });
 
-            return new DTOresult(true, "ok");
+            return new DTOresult(true, "Данные из файла загружены в БД");
 
         } catch (Exception ex) {
             return new DTOresult(false, ex.getMessage());

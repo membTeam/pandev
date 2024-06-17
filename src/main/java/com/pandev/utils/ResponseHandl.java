@@ -5,6 +5,7 @@ import com.pandev.controller.TelegramBot;
 import com.pandev.entities.TelegramChat;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
+import com.pandev.templCommand.CommCommand;
 import jakarta.transaction.Transactional;
 import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.SilentSender;
@@ -18,8 +19,6 @@ import java.util.Map;
 
 import static com.pandev.utils.Constants.*;
 
-import com.pandev.templCommand.CommCommand;
-
 
 public class ResponseHandl {
 
@@ -30,7 +29,6 @@ public class ResponseHandl {
 
     public ResponseHandl(SilentSender sender, DBContext db, GroupsRepository repo) {
         this.sender = sender;
-        //this.chatStates = db.getMap(Constants.CHAT_STATES);
 
         chatStates = new HashMap<>();
 
@@ -282,7 +280,7 @@ public class ResponseHandl {
     }
 
     /**
-     * Распределение входящих сообщений
+     * Распределение входящих текстовых сообщений
      * @param update
      */
     public void replyToDistributionMess(Update update) {
@@ -291,23 +289,20 @@ public class ResponseHandl {
 
             if (message.hasText()) {
                 replyToMess(message);
-            } else if (message.hasDocument()) {
-                replyToDocument(message);
             }
         }
     }
 
-    private void replyToDocument(Message message) {
-        try {
-            var resFile = telegramBot.downloadDocument(message);
+    /**
+     * Обработка документов excel
+     * @param update
+     */
+    public void replyToDocument(Update update) {
+        var message = update.getMessage();
+        var resFile = telegramBot.downloadDocument(message);
 
-            sender.execute(
-                    initMessage(message.getChatId(), "Файл загружен")  );
-
-        } catch (Exception ex) {
-            sender.execute(
-                    initMessage(message.getChatId(), "Не известная ошибка загрузки документа") );
-        }
+        sender.execute(
+                initMessage(message.getChatId(), resFile.value().toString()));
     }
 
     public boolean userIsActive(Long chatId) {
