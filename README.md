@@ -54,7 +54,7 @@
   - replyToStart (/start) запускается через TelegramBot.Ability -> action(ctx -> responseHandl.replyToStart(ctx.chatId()))  
   - replyToDistributionMess менеджер входящих сообщений
   - replyToDocument менеджер обработки документов (Excel)
-  - initMessage -> создание шаблона сообщений, используемый по всему решению
+  - initMessage -> создание шаблона сообщений, используется по всему решению
   
 ### Основыне зависимости методов в util.ResponseHandl
 - класс **ResponseHandl** создается через TelegramBot
