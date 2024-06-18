@@ -124,7 +124,7 @@
   На основе этого шаблона создается пользовательский варинт  
 
 Основные методы: readFromExcel, saveDataByExcelToDb покрыты модульными тестами.  
-saveGroupParentFromExcel & saveSubNodeFromExcel универсальные и используются при обработки через tekegramBot
+saveGroupParentFromExcel & saveSubNodeFromExcel универсальные и используются для обработки через tekegramBot
 
 **Пример вывода в telegramBot (* показатель вложенности)**   
 Javascript  
