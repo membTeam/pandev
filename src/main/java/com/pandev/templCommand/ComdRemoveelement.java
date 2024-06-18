@@ -22,7 +22,7 @@ public class ComdRemoveelement implements TemplCommand {
         var result = commServ.getResponseHandl()
                 .initMessage(mess.getChatId(), null);
 
-        var strGroups = mess.getText();
+        var strGroups = mess.getText().trim().toLowerCase();
 
         try {
             var currElement = groupRepo.findByTxtgroup(strGroups);
@@ -39,16 +39,21 @@ public class ComdRemoveelement implements TemplCommand {
                 return  result;
             }
 
-            List<Groups> lsGroups = groupRepo.findListGroupsByOrdernum(currElement.getRootnode(), currElement.getOrdernum());
+            Integer rootNode = currElement.getRootnode();
+            List<Groups> lsGroupsForDelete = groupRepo.findAllGroupsByParentIdExt(currElement.getId());
+            if (lsGroupsForDelete.size() > 0) {
+                groupRepo.deleteAll(lsGroupsForDelete);
+            }
 
             groupRepo.deleteById(currElement.getId());
 
-            // Изменение позиции элементов в структуре дерева
-            // и сохранение в БД
-            if (lsGroups.size() > 0) {
-
-                lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() - 1));
-                groupRepo.saveAll(lsGroups);
+            List<Groups> lsGroupsForUpdateOrderNum = groupRepo.findAllGroupsForUpdateOrdernum(rootNode);
+            if (lsGroupsForUpdateOrderNum.size() > 0) {
+                var objAccount = new Object(){
+                  public int ordernum = 1;
+                };
+                lsGroupsForUpdateOrderNum.forEach(item-> item.setOrdernum(objAccount.ordernum++));
+                groupRepo.saveAll(lsGroupsForUpdateOrderNum);
             }
 
             result.setText("Выполнено удаление элемента:" + strGroups);

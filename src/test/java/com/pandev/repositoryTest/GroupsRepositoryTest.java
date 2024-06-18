@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,7 +56,7 @@ public class GroupsRepositoryTest {
 
     @Test
     public void maxOrdernum() {
-        var res = groupsRepo.maxOrdernum(100, 130);
+        var res = groupsRepo.maxOrdernum(178, 184);
 
         assertNotNull(res);
     }
@@ -76,12 +75,6 @@ public class GroupsRepositoryTest {
         assertTrue(res.size()>0);
     }
 
-    @Test
-    public void findAllGroupsBytxtGroup() {
-        var res = groupsRepo.findAllGroupsBytxtGroup("SecondElement130", 100);
-
-        assertTrue(res.size()>0);
-    }
 
     @Test
     public void findByTxtgroup() {

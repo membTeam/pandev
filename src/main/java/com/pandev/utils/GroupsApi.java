@@ -1,7 +1,6 @@
 package com.pandev.utils;
 
 
-import com.pandev.controller.TelegramBot;
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import jakarta.transaction.Transactional;
@@ -10,7 +9,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Используетсмя только для сохранения корневого узла
+ * После встраивания группной загрузки из файла,
+ * заменен на ExcelService.saveGroupParentFromExcel,
+ *
+ * Не рекомендуется для использования
+ * Используется только для сохранения корневого узла
  */
 @Service
 public class GroupsApi {
@@ -61,7 +64,7 @@ public class GroupsApi {
                     .txtgroup(strParent)
                     .build();
 
-            var lsObjForMoved = groupRepo.findAllGroupsBytxtGroup(parentNode.getTxtgroup(), parentNode.getRootnode());
+            var lsObjForMoved = groupRepo.findAllRowsAfterCurrentStruct(parentNode.getTxtgroup(), parentNode.getRootnode());
             if (lsObjForMoved.size() > 0) {
                 List<Groups> lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
                 lsGroups.forEach(item-> item.setOrdernum(item.getOrdernum() + 1));

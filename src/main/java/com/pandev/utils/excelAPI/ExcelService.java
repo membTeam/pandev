@@ -133,18 +133,20 @@ public class ExcelService {
             int subOrderNum = groupsRepo.maxOrdernum(subNode.getRootnode(), subNode.getParentnode());
             subNode.setOrdernum(subOrderNum+1);
 
+            groupsRepo.save(subNode);
+
             /**
              * записи, расположенные в структуре rootnode после вставляемой записи
              */
-            var lsObjForMoved = groupsRepo.findAllGroupsByParentId(subNode.getParentnode(), subNode.getRootnode());
+            /*var lsObjForMoved = groupsRepo.findAllGroupsByParentId(subNode.getParentnode(), subNode.getRootnode());
             if (lsObjForMoved.size() > 0) {
                 List<Groups> lsGroups = InitListGroups.convListObjToListGroups(lsObjForMoved);
                 lsGroups.forEach(item -> item.setOrdernum(item.getOrdernum() + 1));
 
                 groupsRepo.saveAll(lsGroups);
-            }
+            }*/
 
-            groupsRepo.save(subNode);
+
 
             return new DTOresult(true, subNode);
 

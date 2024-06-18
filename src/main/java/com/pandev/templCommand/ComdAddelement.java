@@ -24,7 +24,7 @@ public class ComdAddelement implements TemplCommand{
 
     /**
      * ДОбавление корневого элемента
-     * Вся логика обработки в ExcelService.saveSubNodeFromExcel
+     * Вся логика обработки в ExcelService.saveGroupParentFromExcel
      * @param message
      * @param arr
      * @param commServ интерфейс дополнительного функционала
@@ -38,12 +38,11 @@ public class ComdAddelement implements TemplCommand{
 
         var strGroup = arr[0].trim().toLowerCase();
 
-        if ( groupRepo.findByTxtgroup(strGroup) != null) {
-            result.setText("Повторный ввод элемента:" + arr[0]);
-            return result;
-        }
-
         try {
+            if (groupRepo.findByTxtgroup(strGroup) != null) {
+                throw new IllegalArgumentException("Повторный ввод элемента:" + arr[0]);
+            }
+
             var resSave = commServ.getExcelService().saveGroupParentFromExcel(strGroup);
 
             if (!resSave.res()) {
@@ -73,14 +72,12 @@ public class ComdAddelement implements TemplCommand{
         var result = commServ.getResponseHandl()
                 .initMessage(message.getChatId(), null);
 
-        // Родительский элемент
-        var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
-        if (parentNode == null) {
-            result.setText("Нет родительского элемента: " + arr[0]);
-            return result;
-        }
-
         try {
+            var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
+            if (parentNode == null) {
+                result.setText("Нет родительского элемента: " + arr[0]);
+                return result;
+            }
 
             var strSubNode = arr[1];
 

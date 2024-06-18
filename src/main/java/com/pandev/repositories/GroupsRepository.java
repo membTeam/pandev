@@ -32,21 +32,50 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
      * Выборка строк таблицы в которых будут обновляться значения ordernum.
      * В итоге все эти элементы будут смещены по структуре отностельно корневого элемента
      * Используется при добавлении субЭлементов
-     * @param txtgroup
+     * @param txtgroup строковый идентификатор узла. Значения уникальные на уровне таблицы
      * @return
      */
     @Query(value = "select id, rootnode, parentnode, txtgroup, ordernum, levelnum from groups " +
             "where ordernum > (select coalesce(max(ordernum), 2147483640) " +
-            "from groups where parentnode = (select id from groups where txtgroup = :txtgroup) ) " +
+            "from groups where parentnode = (select id from groups where txtgroup = lower(trim(:txtgroup)) ) ) " +
             "and rootnode = :rootId order by ordernum desc", nativeQuery = true)
-    List<List<Object>> findAllGroupsBytxtGroup(String txtgroup, Integer rootId);
+    List<List<Object>> findAllRowsAfterCurrentStruct(String txtgroup, Integer rootId);
 
+    /**
+     * Перед добавлением элемента делается выборка записей, которые будут расположены после этой.
+     * Критерий расположения записей до или после текущей оценивается в контексте корневого узла
+     * и индекса очередности: rootnode and ordernum
+     * @param parentid
+     * @param rootId
+     * @return
+     */
     @Query(value = "select id, rootnode, parentnode, txtgroup, ordernum, levelnum from groups " +
             "where ordernum > (select coalesce(max(ordernum), 2147483640) " +
             "from groups where parentnode = :parentid ) " +
             "and rootnode = :rootId order by ordernum desc", nativeQuery = true)
     List<List<Object>> findAllGroupsByParentId(Integer parentid, Integer rootId);
 
+    /**
+     * Выборка ВСЕХ записей, связанных через parentnode and ordernum.
+     * Используется при удаления элемента
+     * @param parentnode удаляемый узел
+     * @return
+     */
+    @Query(value = "select * from groups " +
+            "where rootnode = (select rootnode from groups where id = :parentnode ) " +
+            "and ordernum in ( select ordernum from groups where parentnode = :parentnode )", nativeQuery = true)
+    List<Groups> findAllGroupsByParentIdExt(Integer parentnode);
+
+    /**
+     * Все записи расположенные ниже удаляемой в контексте корневого узла,
+     * обновляются по полю ordernum.
+     * Используется после удаления узла.
+     * Запускается после обработки скрипта findAllGroupsByParentIdExt
+     * @param rootNode удаляемый узел
+     * @return
+     */
+    @Query(value = "select * from groups where rootNode = :rootNode and ordernum > 0", nativeQuery = true)
+    List<Groups> findAllGroupsForUpdateOrdernum(Integer rootNode);
 
     /**
      * Максимальное значение ordernum из дочерних записей.
@@ -56,8 +85,8 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
      * @return
      */
     @Query(value = "select case " +
-            "when exists(Select * from groups where rootnode = :rootnode and parentnode=:parentnode) " +
-            "then (select max(ordernum) from groups where rootnode = :rootnode and parentnode=:parentnode) " +
+            "when exists(Select * from groups where rootnode = :rootnode ) " +
+            "then (select max(ordernum) from groups where rootnode = :rootnode ) " +
             "else (select ordernum from groups where id = :parentnode) " +
             "end max_order_num", nativeQuery = true)
     Integer maxOrdernum(Integer rootnode, Integer parentnode);
@@ -74,5 +103,11 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
 
     @Query(value = "select exists(select * from groups where txtgroup = lower(trim(:txtgroup)) and parentnode = :parentnode)", nativeQuery = true)
     boolean isExistsBytxtgroupAndParentnode(String txtgroup, Integer parentnode);
+
+
+
+
+
+
 
 }
