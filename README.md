@@ -88,7 +88,7 @@
 - **GroupsApi** заменен на ExcelService.saveGroupParentFromExcel 
 - **utils.excelAPI.ExcelService** сервис загрузки excel файлов.    
   Можно использовать для массовой загрузки данных через excel файла 
-- **InitListGroups** конвертор данных List List Object> into List Groups
+- **InitListGroups** конвертор данных List List Object into List Groups
 - **DTOresult**  класс обмена данных между методами. 
 
 
