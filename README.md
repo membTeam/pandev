@@ -73,10 +73,13 @@
 ### Сервисы
 - **templCommand.CommService** сервис создания классов обработчиков на основе сообщений:
   COMD_REMOVE_ELEMENT, COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT.  
+
   По значению message.getMessage иницируется класс обработчик.  
   templCommand.Comd** шаблон классов обработчиков.   
+
   Все классы - реализация интерфейса TemplCommand  
   Используется из **ResponseHandl**   
+
  
 ### Утилиты (utils.**) 
 - **FileAPI** сервис загрузки данных из файлов   
