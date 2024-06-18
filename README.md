@@ -126,7 +126,7 @@
 Основные методы: readFromExcel, saveDataByExcelToDb покрыты модульными тестами.  
 saveGroupParentFromExcel & saveSubNodeFromExcel универсальные и используются для обработки через tekegramBot
 
-**Пример вывода в telegramBot (* показатель вложенности)**   
+**Пример вывода в telegramBot (Звездочка - показатель вложенности)**   
 Javascript  
 *Webdeveloper  
 **Тестировщики  
