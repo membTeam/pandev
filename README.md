@@ -55,7 +55,7 @@
   - replyToDistributionMess менеджер входящих сообщений
   - replyToDocument менеджер обработки документов (Excel)
   - initMessage -> создание шаблона сообщений, используемый по всему решению
-  - 
+  
 ### Основыне зависимости методов в util.ResponseHandl
 - класс **ResponseHandl** создается через TelegramBot
 - **replyToDistributionMess**
