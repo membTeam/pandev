@@ -46,16 +46,6 @@ public class ResponseHandl {
         this.sender = sender;
     }
 
-    private String getUserName(long chatId) {
-
-        var user = telegramChatRepo.findByChatId(chatId);
-        if (user == null) {
-            return "empty";
-        }
-
-        return user.getUserName();
-    }
-
     private void replyToCancel(Message mess) {
         var message = initMessage(mess.getChatId(), null);
 

@@ -23,6 +23,7 @@ import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +36,6 @@ import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 @Service
 public class TelegramBot extends AbilityBot {
 
-    private final String userName;
     private final String externameResource;
 
     private final ExcelService excelService;
@@ -48,7 +48,6 @@ public class TelegramBot extends AbilityBot {
                        ExcelService excelService, FileAPI fileAPI, ResponseHandl responseHandl) {
 
         super(token, "userpandev");
-        this.userName = "userpandev";
 
         this.externameResource = eternameResource;
         this.excelService = excelService;
@@ -61,9 +60,10 @@ public class TelegramBot extends AbilityBot {
         responseHandl.init(this.silent);
     }
 
-    public DTOresult downloadDocument(Message message) {
+    public void downloadDocument(Update update)  {
 
-        var document = message.getDocument();
+        var document = update.getMessage().getDocument();
+        var chatId = update.getMessage().getChatId();
         var fileId = document.getFileId();
 
         try {
@@ -79,11 +79,12 @@ public class TelegramBot extends AbilityBot {
             downloadFile(file, tempFile);
 
             var lsData = excelService.readFromExcel(strFile);
-            return excelService.saveDataByExcelToDb(lsData);
+            excelService.saveDataByExcelToDb(lsData);
 
-        } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
-        }
+            sender.execute(
+                    responseHandl.initMessage(chatId,
+                            "Выполнена загрузка данных из файла"));
+        } catch (Exception ex) { }
     }
 
     public Reply replyToButtons() {
@@ -95,11 +96,12 @@ public class TelegramBot extends AbilityBot {
 
     public Reply replyToDocument() {
         BiConsumer<BaseAbilityBot, Update> action =
-                (abilityBot, upd) -> responseHandl.replyToDocument(upd);
+                (abilityBot, upd) -> downloadDocument(upd);
+        //responseHandl.replyToDocument(upd);
 
-        return Reply.of(action, Flag.DOCUMENT,upd -> responseHandl.userIsActive(getChatId(upd)));
+        return Reply.of(action, Flag.DOCUMENT,upd -> replyToDocument(upd));
+        // responseHandl.userIsActive(getChatId(upd))
     }
-
 
     public Ability startBot() {
         return Ability
@@ -110,6 +112,11 @@ public class TelegramBot extends AbilityBot {
                 .privacy(PUBLIC)
                 .action(ctx -> responseHandl.replyToStart(ctx.chatId()))
                 .build();
+    }
+
+
+    private boolean replyToDocument(Update update) {
+        return true;
     }
 
     @Override
