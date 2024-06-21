@@ -55,7 +55,7 @@ public class TelegramBot extends AbilityBot {
     private CommCommand commCommand;
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
-                       @Value("${path-external-resource}") String eternameResource, GroupsRepository groupsRepo, ExcelService excelService,
+                       @Value("${path-external-resource}") String eternameResource, ExcelService excelService,
                        TelegramChatRepository telegramChatRepo, FileAPI fileAPI ){
         super(token, "userpandev");
 
@@ -67,13 +67,7 @@ public class TelegramBot extends AbilityBot {
         this.userName = "userpandev";
 
         this.commCommand = commCommand;
-        // this.responseHandl = new ResponseHandl(silent, db, groupRepo);
-    }
-
-    @PostConstruct
-    private void init() {
-        commCommand.init(this, excelService);
-        responseHandl.init(this);
+        //this.responseHandl = new ResponseHandl(silent, db, groupRepo);
     }
 
     public DTOresult downloadDocument(Message message) {

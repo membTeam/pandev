@@ -5,6 +5,7 @@ import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ResponseHandl;
 import com.pandev.utils.excelAPI.ExcelService;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -21,21 +22,14 @@ public class CommCommand implements CommService {
 
     private final GroupsRepository groupsRepo;
     private final FileAPI fileAPI;
+    private final ExcelService excelService;
+    private final ResponseHandl responseHandl;
 
-    private TelegramBot telegramBot;
-
-    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService) {
+    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService, ExcelService excelService1, ResponseHandl responseHandl) {
         this.groupsRepo = groupsRepo;
         this.fileAPI = fileAPI;
-    }
-
-    /**
-     * Дополнительная инициализация из TelegramBot
-     * @param telegramBot
-     */
-    public void init(TelegramBot telegramBot, ExcelService excelService) {
-        this.telegramBot = telegramBot;
-
+        this.excelService = excelService1;
+        this.responseHandl = responseHandl;
     }
 
     private static String lowercaseFirstLetter(String word) {
@@ -71,7 +65,7 @@ public class CommCommand implements CommService {
 
     @Override
     public ExcelService getExcelService() {
-        return telegramBot.getExcelService();
+        return excelService;
     }
 
     @Override
@@ -81,7 +75,7 @@ public class CommCommand implements CommService {
 
     @Override
     public ResponseHandl getResponseHandl() {
-        return telegramBot.getResponseHandl();
+        return responseHandl;
     }
 
     @Override

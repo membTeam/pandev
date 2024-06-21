@@ -7,7 +7,9 @@ import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.db.DBContext;
+import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,35 +21,23 @@ import java.util.Map;
 
 import static com.pandev.utils.Constants.*;
 
-
+@Service
 public class ResponseHandl {
 
     private final SilentSender sender;
-    private final GroupsRepository groupRepo;
     private final Map<Long, UserState> chatStates;
-    private TelegramBot telegramBot;
+    private final CommCommand commCommand;
+    private final FileAPI fileAPI;
 
-    public ResponseHandl(SilentSender sender, DBContext db, GroupsRepository repo) {
+    public ResponseHandl(SilentSender sender, DBContext db, CommCommand commCommand, FileAPI fileAPI) {
         this.sender = sender;
+        this.commCommand = commCommand;
+        this.fileAPI = fileAPI;
 
         chatStates = new HashMap<>();
-
-        this.groupRepo = repo;
     }
 
-    /**
-     * Инициализация TelegramBot, который используется как источник для bean objects
-     * @param telegramBot
-     */
-    public void init(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
-
-    private CommCommand getCommonCommand() {
-        return telegramBot.getCommCommand();
-    }
-
-    private String getUserName(long chatId) {
+/*    private String getUserName(long chatId) {
 
         var user = getChatRepository().findByChatId(chatId);
         if (user == null) {
@@ -55,21 +45,17 @@ public class ResponseHandl {
         }
 
         return user.getUserName();
-    }
+    }*/
 
-    private TelegramChatRepository getChatRepository() {
+/*    private TelegramChatRepository getChatRepository() {
         return telegramBot.getTelegramChatRepo();
-    }
-
-    private FileAPI getFileApi() {
-        return telegramBot.getFileAPI();
-    }
+    }*/
 
     private void replyToCancel(Message mess) {
         var message = initMessage(mess.getChatId(), null);
 
         try {
-            message.setText(getFileApi().loadDataFromFile(FILE_HELP));
+            message.setText(fileAPI.loadDataFromFile(FILE_HELP));
         } catch (Exception ex) {
             message.setText("Ошибка инициализации сообщения");
         }
@@ -120,7 +106,7 @@ public class ResponseHandl {
      * @param message
      */
     private void useTemplCommand(Message message) {
-        SendMessage res = getCommonCommand().initMessageFromStrCommand(message, message.getText());
+        SendMessage res = commCommand.initMessageFromStrCommand(message, message.getText());
         sender.execute(res);
     }
 
@@ -155,7 +141,7 @@ public class ResponseHandl {
         }
 
         sender.execute(
-                    getCommonCommand().initMessageFromStrCommand(message, strCommand) );
+                commCommand.initMessageFromStrCommand(message, strCommand) );
 
         chatStates.put(message.getChatId(), UserState.NONE);
     }
@@ -197,7 +183,7 @@ public class ResponseHandl {
 
             chatStates.put(chatId, UserState.NONE);
 
-            var text = getFileApi().loadDataFromFile(FILE_START_REGISTER_USER);
+            var text = fileAPI.loadDataFromFile(FILE_START_REGISTER_USER);
             respMessage.setText(text);
 
         } catch (Exception ex) {
@@ -237,7 +223,7 @@ public class ResponseHandl {
         };
 
         try {
-            textFromFile = getFileApi().loadDataFromFile(file);
+            textFromFile = fileAPI.loadDataFromFile(file);
         } catch (Exception ex) {
             chatStates.put(chatId, UserState.NONE);
             unexpectedCommand(chatId);
@@ -270,7 +256,7 @@ public class ResponseHandl {
                 chatStates.put(chatId, UserState.NONE);
             }
 
-            message.setText(getFileApi().loadDataFromFile(file));
+            message.setText(fileAPI.loadDataFromFile(file));
 
         } catch (Exception ex) {
             message.setText("Неизвестная ошибка. Зайдите позднее");
@@ -298,11 +284,11 @@ public class ResponseHandl {
      * @param update
      */
     public void replyToDocument(Update update) {
-        var message = update.getMessage();
+      /*  var message = update.getMessage();
         var resFile = telegramBot.downloadDocument(message);
 
         sender.execute(
-                initMessage(message.getChatId(), resFile.value().toString()));
+                initMessage(message.getChatId(), resFile.value().toString()));*/
     }
 
     public boolean userIsActive(Long chatId) {
