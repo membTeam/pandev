@@ -1,10 +1,9 @@
 package com.pandev.templCommand;
 
-import com.pandev.utils.GroupsApi;
-import com.pandev.utils.ResponseHandl;
 import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.ResponseHandl;
 import com.pandev.utils.excelAPI.ExcelService;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -90,8 +89,4 @@ public class CommCommand implements CommService {
         return fileAPI;
     }
 
-    @Override
-    public GroupsApi getGroupApi() {
-        return telegramBot.getGroupsApi();
-    }
 }
