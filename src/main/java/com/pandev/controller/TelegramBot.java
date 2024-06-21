@@ -40,9 +40,6 @@ public class TelegramBot extends AbilityBot {
     private final String externameResource;
 
     @Getter
-    private final GroupsRepository groupsRepo;
-
-    @Getter
     private final ExcelService excelService;
 
     @Getter
@@ -59,13 +56,10 @@ public class TelegramBot extends AbilityBot {
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
                        @Value("${path-external-resource}") String eternameResource, GroupsRepository groupsRepo, ExcelService excelService,
-                       TelegramChatRepository telegramChatRepo, FileAPI fileAPI,
-                       GroupsRepository groupRepo
-                       ){
+                       TelegramChatRepository telegramChatRepo, FileAPI fileAPI ){
         super(token, "userpandev");
 
         this.externameResource = eternameResource;
-        this.groupsRepo = groupsRepo;
         this.excelService = excelService;
         this.telegramChatRepo = telegramChatRepo;
         this.fileAPI = fileAPI;
@@ -73,7 +67,7 @@ public class TelegramBot extends AbilityBot {
         this.userName = "userpandev";
 
         this.commCommand = commCommand;
-        this.responseHandl = new ResponseHandl(silent, db, groupRepo);
+        // this.responseHandl = new ResponseHandl(silent, db, groupRepo);
     }
 
     @PostConstruct
