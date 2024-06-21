@@ -1,15 +1,13 @@
 package com.pandev.utils;
 
 
-import com.pandev.controller.TelegramBot;
 import com.pandev.entities.TelegramChat;
-import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.telegram.abilitybots.api.db.DBContext;
-import org.telegram.abilitybots.api.bot.AbilityBot;
+
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -24,32 +22,39 @@ import static com.pandev.utils.Constants.*;
 @Service
 public class ResponseHandl {
 
-    private final SilentSender sender;
     private final Map<Long, UserState> chatStates;
     private final CommCommand commCommand;
     private final FileAPI fileAPI;
+    private final TelegramChatRepository telegramChatRepo;
+    private SilentSender sender;
 
-    public ResponseHandl(SilentSender sender, DBContext db, CommCommand commCommand, FileAPI fileAPI) {
-        this.sender = sender;
+
+    public ResponseHandl(CommCommand commCommand, FileAPI fileAPI, TelegramChatRepository telegramChatRepo) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
+        this.telegramChatRepo = telegramChatRepo;
 
         chatStates = new HashMap<>();
     }
 
-/*    private String getUserName(long chatId) {
+    @PostConstruct
+    private void init() {
+        commCommand.init(this);
+    }
 
-        var user = getChatRepository().findByChatId(chatId);
+    public void init(SilentSender sender) {
+        this.sender = sender;
+    }
+
+    private String getUserName(long chatId) {
+
+        var user = telegramChatRepo.findByChatId(chatId);
         if (user == null) {
             return "empty";
         }
 
         return user.getUserName();
-    }*/
-
-/*    private TelegramChatRepository getChatRepository() {
-        return telegramBot.getTelegramChatRepo();
-    }*/
+    }
 
     private void replyToCancel(Message mess) {
         var message = initMessage(mess.getChatId(), null);
@@ -179,7 +184,7 @@ public class ResponseHandl {
                     .userName(message.getText())
                     .build();
 
-            getChatRepository().save(user);
+            telegramChatRepo.save(user);
 
             chatStates.put(chatId, UserState.NONE);
 
@@ -246,7 +251,7 @@ public class ResponseHandl {
         message.setChatId(chatId);
 
         try {
-            TelegramChat telegramChat = getChatRepository().findByChatId(chatId);
+            TelegramChat telegramChat = telegramChatRepo.findByChatId(chatId);
 
             if (telegramChat == null) {
                 file = FILE_START_NOT_REGISTER_USER;

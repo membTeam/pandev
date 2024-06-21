@@ -23,12 +23,15 @@ public class CommCommand implements CommService {
     private final GroupsRepository groupsRepo;
     private final FileAPI fileAPI;
     private final ExcelService excelService;
-    private final ResponseHandl responseHandl;
+    private ResponseHandl responseHandl;
 
-    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService, ExcelService excelService1, ResponseHandl responseHandl) {
+    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService1) {
         this.groupsRepo = groupsRepo;
         this.fileAPI = fileAPI;
         this.excelService = excelService1;
+    }
+
+    public void init(ResponseHandl responseHandl) {
         this.responseHandl = responseHandl;
     }
 

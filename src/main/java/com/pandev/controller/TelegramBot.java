@@ -1,37 +1,36 @@
 package com.pandev.controller;
 
 
-
-import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
-import com.pandev.utils.*;
+import com.pandev.utils.Constants;
+import com.pandev.utils.DTOresult;
+import com.pandev.utils.FileAPI;
+import com.pandev.utils.ResponseHandl;
 import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
+import org.telegram.abilitybots.api.bot.AbilityBot;
+import org.telegram.abilitybots.api.bot.BaseAbilityBot;
+import org.telegram.abilitybots.api.objects.Ability;
+import org.telegram.abilitybots.api.objects.Flag;
+import org.telegram.abilitybots.api.objects.Reply;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
-import org.springframework.stereotype.Service;
-import org.telegram.abilitybots.api.bot.AbilityBot;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Reply;
-import org.telegram.abilitybots.api.bot.BaseAbilityBot;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.abilitybots.api.objects.Flag;
-import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
+import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 
 @Service
 public class TelegramBot extends AbilityBot {
@@ -39,35 +38,27 @@ public class TelegramBot extends AbilityBot {
     private final String userName;
     private final String externameResource;
 
-    @Getter
     private final ExcelService excelService;
-
-    @Getter
-    private final TelegramChatRepository telegramChatRepo;
-
-    @Getter
     private final FileAPI fileAPI;
+    private final ResponseHandl responseHandl;
 
-    @Getter
-    private ResponseHandl responseHandl;
-
-    @Getter
-    private CommCommand commCommand;
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
-                       @Value("${path-external-resource}") String eternameResource, ExcelService excelService,
-                       TelegramChatRepository telegramChatRepo, FileAPI fileAPI ){
+                       @Value("${path-external-resource}") String eternameResource,
+                       ExcelService excelService, FileAPI fileAPI, ResponseHandl responseHandl) {
+
         super(token, "userpandev");
+        this.userName = "userpandev";
 
         this.externameResource = eternameResource;
         this.excelService = excelService;
-        this.telegramChatRepo = telegramChatRepo;
         this.fileAPI = fileAPI;
+        this.responseHandl = responseHandl;
+    }
 
-        this.userName = "userpandev";
-
-        this.commCommand = commCommand;
-        //this.responseHandl = new ResponseHandl(silent, db, groupRepo);
+    @PostConstruct
+    private void init() {
+        responseHandl.init(this.silent);
     }
 
     public DTOresult downloadDocument(Message message) {
