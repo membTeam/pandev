@@ -74,13 +74,13 @@ public class ComdAddelement implements TemplCommand{
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
             if (parentNode == null) {
-                var strFormated = InitListViewWithFormated.initViewFormated(commServ.getGroupsRepo());
+                var strFormatedGroups = InitListViewWithFormated.initViewFormated(commServ.getGroupsRepo());
 
                 return commServ.getResponseHandl().initMessage(chatId,
                         "Корневой узел не найден.\n" +
                         "Сверьте свои данные с деревом групп.\n" +
                         "--------------------\n" +
-                        strFormated);
+                        strFormatedGroups);
             }
 
             var strSubNode = arr[1];
