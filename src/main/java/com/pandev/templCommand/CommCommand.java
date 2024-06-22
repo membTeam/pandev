@@ -2,7 +2,9 @@ package com.pandev.templCommand;
 
 import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOparser;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.ParserMessage;
 import com.pandev.utils.ResponseHandl;
 import com.pandev.utils.excelAPI.ExcelService;
 import lombok.Getter;
@@ -35,6 +37,7 @@ public class CommCommand implements CommService {
         this.responseHandl = responseHandl;
     }
 
+
     private static String lowercaseFirstLetter(String word) {
         if (word.charAt(0) == '/') {
             word = word.substring(1);
@@ -42,15 +45,13 @@ public class CommCommand implements CommService {
         return word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
     }
 
-    /**
-     * Создание объекта на основе методов рефлекции
-     * @param message ответное сообщение пользователя
-     * @param strCommand строковый идентификатор команды
-     * @return
-     */
-    public SendMessage initMessageFromStrCommand(Message message, String strCommand) {
 
-        var strFormCommand = String.format("Comd%s", lowercaseFirstLetter(strCommand));
+    public SendMessage initMessageFromStrCommand(Message message) {
+
+        DTOparser dtoParser = ParserMessage.getParsingMessage(message);
+
+        var strFormCommand = String.format("Comd%s",
+                        lowercaseFirstLetter( dtoParser.strCommand().substring(1)));
         var pathClass = String.format("%s.%s",
                 this.getClass().getPackageName(), strFormCommand);
 
@@ -62,7 +63,7 @@ public class CommCommand implements CommService {
             return obj.applyMethod(message, this);
 
         } catch (Exception e) {
-            return getResponseHandl().initMessage(message.getChatId(),"внутренняя ошибка.");
+            return getResponseHandl().initMessage(dtoParser.chatId(),"внутренняя ошибка.");
         }
     }
 

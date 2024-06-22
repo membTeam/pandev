@@ -108,7 +108,7 @@ public class TelegramBot extends AbilityBot {
                 .info(Constants.START_DESCRIPTION)
                 .locality(USER)
                 .privacy(PUBLIC)
-                .action(ctx -> responseHandl.replyToStart(ctx.chatId()))
+                .action(ctx -> responseHandl.replyToDistributionMess(ctx.update()))
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.pandev.utils;
 
 
 import com.pandev.entities.TelegramChat;
+import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
 import jakarta.annotation.PostConstruct;
@@ -27,14 +28,17 @@ public class ResponseHandl {
     private final FileAPI fileAPI;
     private final TelegramChatRepository telegramChatRepo;
     private SilentSender sender;
+    private final GroupsRepository groupsRepository;
 
 
-    public ResponseHandl(CommCommand commCommand, FileAPI fileAPI, TelegramChatRepository telegramChatRepo) {
+    public ResponseHandl(CommCommand commCommand, FileAPI fileAPI, TelegramChatRepository telegramChatRepo,
+                         GroupsRepository groupsRepository) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
         this.telegramChatRepo = telegramChatRepo;
 
         chatStates = new HashMap<>();
+        this.groupsRepository = groupsRepository;
     }
 
     @PostConstruct
@@ -59,51 +63,31 @@ public class ResponseHandl {
     }
 
     /**
-     * Обработка на основе текущего состояния из chatStates
-     * Состояние NONE используется для обработки введенных команд
-     * Остальные состояния для обработки ответа на приглашение ввода параметра
-     * @param message
-     */
-    private void replyToMess(Message message) {
-
-        if (message.getText().equalsIgnoreCase( COMD_STOP)) {
-            stopChat(message.getChatId());
-        }
-
-        switch (chatStates.get(message.getChatId())) {
-            case AWAITING_NAME -> replyToName(message);
-            case AWAITING_ADD_ELEMENT,
-                 AWAITING_REMOVE_ELEMENT -> addOrRemoveElement(message);
-            default -> replyToCommand(message);
-        }
-    }
-
-    /**
      * Обработка команд пользователя.
      * Не верный ввод команды обрабатывается в unexpectedCommand
      * @param message
      */
-    private void replyToCommand(Message message) {
+/*    private void replyToCommand(Message message) {
         switch (message.getText()) {
-            case COMD_REMOVE_ELEMENT, COMD_ADD_ELEMENT -> sendMessageToUser(message);
-            case COMD_HELP, COMD_VIEW_TREE -> useTemplCommand(message);
+//            case COMD_REMOVE_ELEMENT, COMD_ADD_ELEMENT -> sendMessageToUser(message);
+//            case COMD_HELP, COMD_VIEW_TREE -> useTemplCommand(message);
             case COMD_START -> sender.execute(
                     initMessage(message.getChatId(), "Вы уже в системе. Список команд: /help"));
             case COMD_CANCEL -> replyToCancel(message);
 
             default -> unexpectedCommand(message.getChatId());
         }
-    }
+    }*/
 
     /**
      * Обработка сообщений на основе шаблона команд.
      * Сообщения, которые не предназначены для изменения БД
      * @param message
      */
-    private void useTemplCommand(Message message) {
-        SendMessage res = commCommand.initMessageFromStrCommand(message, message.getText());
+/*    private void useTemplCommand(Message message) {
+        SendMessage res = commCommand.initMessageFromStrCommand(message);
         sender.execute(res);
-    }
+    }*/
 
     /**
      * На основе шаблона команд -> создание класса-обработчика для ответного сообщения.
@@ -111,10 +95,10 @@ public class ResponseHandl {
      * Эти классы изменяют состояние БД
      * @param message
      */
-    private void addOrRemoveElement(Message message) {
+    /*private void addOrRemoveElement(Message message) {
 
-        if (message.getText().equals(COMD_CANCEL)) {
-            replyToCancel(message);
+        if (message.getText().equals(COMD_STOP)) {
+            stopChat();
             return;
         }
 
@@ -136,10 +120,10 @@ public class ResponseHandl {
         }
 
         sender.execute(
-                commCommand.initMessageFromStrCommand(message, strCommand) );
+                commCommand.initMessageFromStrCommand(message) );
 
         chatStates.put(message.getChatId(), UserState.NONE);
-    }
+    }*/
 
     /**
      * Остановка telegramBot и закрытие ВСЕХ ресурсов.
@@ -157,37 +141,6 @@ public class ResponseHandl {
         sender.execute(sendMessage);
     }
 
-    /**
-     * Регистрация нового пользователя в БД. Из message извлекается имя пользователя.
-     * В заключении устанавливается состояние NONE.
-     * Это позволит вводить команды в telegramBot
-     * @param message
-     */
-    @Transactional
-    private void replyToName(Message message) {
-        var chatId = message.getChatId();
-        SendMessage respMessage = initMessage(chatId, null);
-
-        try {
-            var user = TelegramChat.builder()
-                    .chatId(chatId)
-                    .userName(message.getText())
-                    .build();
-
-            telegramChatRepo.save(user);
-
-            chatStates.put(chatId, UserState.NONE);
-
-            var text = fileAPI.loadDataFromFile(FILE_START_REGISTER_USER);
-            respMessage.setText(text);
-
-        } catch (Exception ex) {
-            respMessage.setText("Не известная ошибка. Войдите позднее");
-        }
-
-        sender.execute(respMessage);
-    }
-
 
     /**
      * Не опознанная команда сообщения
@@ -197,36 +150,6 @@ public class ResponseHandl {
         sender.execute(initMessage(chatId, "Команда не опознана."));
     }
 
-    /**
-     * Отправить сообщение из файла и изменить статус пользователя.
-     * Используется только для команд: /removeElement, /addElement
-     * @param message
-     */
-    private void sendMessageToUser(Message message) {
-        var chatId = message.getChatId();
-        String textFromFile;
-
-        var file = switch (message.getText()) {
-            case COMD_REMOVE_ELEMENT -> {
-                chatStates.put(chatId, UserState.AWAITING_REMOVE_ELEMENT);
-                yield FILE_REMOVE_ELEMENT;
-            }
-            case COMD_ADD_ELEMENT -> {
-                chatStates.put(chatId, UserState.AWAITING_ADD_ELEMENT);
-                yield FILE_ADD_ELEMENT;}
-            default -> FILE_DEFAULT;
-        };
-
-        try {
-            textFromFile = fileAPI.loadDataFromFile(file);
-        } catch (Exception ex) {
-            chatStates.put(chatId, UserState.NONE);
-            unexpectedCommand(chatId);
-            return;
-        }
-
-        sender.execute(initMessage(chatId, textFromFile));
-    }
 
     /**
      * Инициализация старта. Если пользователь не зарегистрирован, создается приглашение ввести имя.
@@ -234,30 +157,26 @@ public class ResponseHandl {
      * @param chatId
      */
     public void replyToStart(long chatId) {
-
-        String file;
-
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-
         try {
-            TelegramChat telegramChat = telegramChatRepo.findByChatId(chatId);
+            String file = FILE_START_REGISTER_USER;
+            String text = fileAPI.loadDataFromFile(file);
 
-            if (telegramChat == null) {
-                file = FILE_START_NOT_REGISTER_USER;
-                chatStates.put(chatId, UserState.AWAITING_NAME);
-            } else {
-                file = FILE_START_REGISTER_USER;
-                chatStates.put(chatId, UserState.NONE);
-            }
+            //TelegramChat telegramChat = telegramChatRepo.findByChatId(chatId);
+/*            if (telegramChat == null) {
+                TelegramChat.builder()
+                        .chatId(chatId)
+                        .build();
+                groupsRepository.save(telegramChat);
+            }*/
 
-            message.setText(fileAPI.loadDataFromFile(file));
+            SendMessage message = initMessage(chatId, text);
+            sender.execute(message);
 
         } catch (Exception ex) {
-            message.setText("Неизвестная ошибка. Зайдите позднее");
+            sender.execute(
+                    initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
-        sender.execute(message);
     }
 
     /**
@@ -268,14 +187,31 @@ public class ResponseHandl {
         if (update != null && update.hasMessage()) {
             Message message = update.getMessage();
 
-            if (message.hasText()) {
-                replyToMess(message);
+            var strCommand = ParserMessage.getstrCommandFromMessage(message);
+            try {
+                switch (strCommand) {
+                    case COMD_START -> replyToStart(message.getChatId());
+                    case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
+                         COMD_VIEW_TREE, COMD_HELP ->
+                           sender.execute(commCommand.initMessageFromStrCommand(message));
+
+                    case  COMD_STOP -> stopChat(message.getChatId());
+                    default -> unexpectedCommand(message.getChatId());
+                }
+            } catch (Exception ex) {
+                unexpectedCommand(message.getChatId());
             }
         }
     }
 
+    public void initAndSendMessage(long chatId, String text) {
+        var message = initMessage(chatId, text);
+        sender.execute(message);
+    }
+
     public boolean userIsActive(Long chatId) {
-        return chatStates.containsKey(chatId);
+        return true;
+                //chatStates.containsKey(chatId);
     }
 
     /**

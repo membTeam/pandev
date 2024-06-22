@@ -1,16 +1,16 @@
 package com.pandev.templCommand;
 
-import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.InitListGroups;
+import com.pandev.utils.DTOparser;
+import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.RecordDTOexcel;
-import jakarta.transaction.Transactional;
 import lombok.NoArgsConstructor;
-import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.List;
+
+import com.pandev.utils.DTOparser;
 
 
 /**
@@ -25,16 +25,15 @@ public class ComdAddelement implements TemplCommand{
     /**
      * ДОбавление корневого элемента
      * Вся логика обработки в ExcelService.saveGroupParentFromExcel
-     * @param message
+     * @param chatId
      * @param arr
      * @param commServ интерфейс дополнительного функционала
      * @return
      */
-    @Transactional
-    private SendMessage addRootElement(Message message, String[] arr,  CommService commServ) {
+    private SendMessage addRootElement(long chatId, String[] arr,  CommService commServ) {
 
         var result = commServ.getResponseHandl()
-                .initMessage(message.getChatId(), null);
+                .initMessage(chatId, null);
 
         var strGroup = arr[0].trim().toLowerCase();
 
@@ -61,16 +60,15 @@ public class ComdAddelement implements TemplCommand{
     /**
      * Добавление субЭлемента только если есть родительский элемент.
      * Вся логика обработки в ExcelService.saveDataByExcelToDb
-     * @param message
+     * @param chatId
      * @param arr массив 0 родительский элемент 1 субЭлемент
      * @param commServ интерфейс дополнительного функционала
      * @return
      */
-    @Transactional
-    private SendMessage addSubElement(Message message, String[] arr, CommService commServ ) {
+    private SendMessage addSubElement(long chatId, String[] arr, CommService commServ ) {
 
         var result = commServ.getResponseHandl()
-                .initMessage(message.getChatId(), null);
+                .initMessage(chatId, null);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
@@ -100,19 +98,19 @@ public class ComdAddelement implements TemplCommand{
     @Override
     public SendMessage applyMethod(Message mess, CommService commServ) {
 
+        DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
         groupRepo = commServ.getGroupsRepo();
 
-        var arrParams = mess.getText().split(" ");
-        if (arrParams.length > 2) {
-            return commServ.getResponseHandl()
-                    .initMessage(mess.getChatId(), "Ошибка параметров");
-        }
+        try {
+            if (dtoParser.arrParams().length == 1) {
+                return addRootElement(mess.getChatId(), dtoParser.arrParams(), commServ);
+            } else {
+                return addSubElement(mess.getChatId(), dtoParser.arrParams(), commServ);
+            }
 
-        if (arrParams.length == 1) {
-            return addRootElement(mess, arrParams, commServ);
-        } else {
-            return addSubElement(mess, arrParams, commServ);
+        } catch (Exception ex) {
+           return commServ.getResponseHandl()
+                    .initMessage(mess.getChatId(), ex.getMessage());
         }
-
     }
 }
