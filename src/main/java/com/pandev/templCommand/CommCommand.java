@@ -1,15 +1,12 @@
 package com.pandev.templCommand;
 
-import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOparser;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.utils.ResponseHandl;
+import com.pandev.controller.ResponseController;
 import com.pandev.utils.excelAPI.ExcelService;
-import static com.pandev.utils.Constants.*;
 
-import org.aspectj.bridge.Constants;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -27,7 +24,7 @@ public class CommCommand implements CommService {
     private final GroupsRepository groupsRepo;
     private final FileAPI fileAPI;
     private final ExcelService excelService;
-    private ResponseHandl responseHandl;
+    private ResponseController responseHandl;
 
     public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService1) {
         this.groupsRepo = groupsRepo;
@@ -35,7 +32,7 @@ public class CommCommand implements CommService {
         this.excelService = excelService1;
     }
 
-    public void init(ResponseHandl responseHandl) {
+    public void init(ResponseController responseHandl) {
         this.responseHandl = responseHandl;
     }
 
@@ -80,7 +77,7 @@ public class CommCommand implements CommService {
     }
 
     @Override
-    public ResponseHandl getResponseHandl() {
+    public ResponseController getResponseHandl() {
         return responseHandl;
     }
 

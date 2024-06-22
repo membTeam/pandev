@@ -6,7 +6,7 @@ import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.Constants;
 import com.pandev.utils.DTOresult;
 import com.pandev.utils.FileAPI;
-import com.pandev.utils.ResponseHandl;
+
 import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.PastOrPresent;
@@ -40,12 +40,12 @@ public class TelegramBot extends AbilityBot {
 
     private final ExcelService excelService;
     private final FileAPI fileAPI;
-    private final ResponseHandl responseHandl;
+    private final ResponseController responseHandl;
 
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
                        @Value("${path-external-resource}") String eternameResource,
-                       ExcelService excelService, FileAPI fileAPI, ResponseHandl responseHandl) {
+                       ExcelService excelService, FileAPI fileAPI, ResponseController responseHandl) {
 
         super(token, "userpandev");
 
