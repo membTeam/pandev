@@ -1,10 +1,12 @@
 package com.pandev.controller;
 
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.InitListViewWithFormated;
 import com.pandev.utils.ParserMessage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -14,6 +16,8 @@ import static com.pandev.utils.Constants.*;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
+
+import java.io.Serializable;
 
 
 @Service
@@ -78,14 +82,6 @@ public class ResponseController {
             String file = FILE_START_REGISTER_USER;
             String text = fileAPI.loadDataFromFile(file);
 
-            //TelegramChat telegramChat = telegramChatRepo.findByChatId(chatId);
-/*            if (telegramChat == null) {
-                TelegramChat.builder()
-                        .chatId(chatId)
-                        .build();
-                groupsRepository.save(telegramChat);
-            }*/
-
             SendMessage message = initMessage(chatId, text);
             sender.execute(message);
 
@@ -109,7 +105,7 @@ public class ResponseController {
                 switch (strCommand) {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
-                         COMD_VIEW_TREE, COMD_HELP ->
+                         COMD_HELP, COMD_VIEW_TREE ->
                            sender.execute(commCommand.initMessageFromStrCommand(message));
 
                     case  COMD_STOP -> stopChat(message.getChatId());
@@ -121,11 +117,11 @@ public class ResponseController {
         }
     }
 
-/*    public void initAndSendMessage(long chatId, String text) {
-        var message = initMessage(chatId, text);
-        sender.execute(message);
+    /*public void replyToView(long chatId) {
+        var strFormated = InitListViewWithFormated.initViewFormated(groupsRepository);
+        var message = initMessage(chatId, strFormated);
+        sender.execute(commCommand.initMessageFromStrCommand(message));
     }*/
-
 
     /**
      * Создание шаблона текстового сообщения.

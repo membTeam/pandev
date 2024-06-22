@@ -2,6 +2,7 @@ package com.pandev.templCommand;
 
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOparser;
+import com.pandev.utils.InitListViewWithFormated;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.RecordDTOexcel;
 import lombok.NoArgsConstructor;
@@ -73,8 +74,13 @@ public class ComdAddelement implements TemplCommand{
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
             if (parentNode == null) {
-                result.setText("Нет родительского элемента: " + arr[0]);
-                return result;
+                var strFormated = InitListViewWithFormated.initViewFormated(commServ.getGroupsRepo());
+
+                return commServ.getResponseHandl().initMessage(chatId,
+                        "Корневой узел не найден.\n" +
+                        "Сверьте свои данные с деревом групп.\n" +
+                        "--------------------\n" +
+                        strFormated);
             }
 
             var strSubNode = arr[1];
