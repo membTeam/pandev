@@ -1,7 +1,6 @@
 package com.pandev.entities;
 
 
-import com.pandev.utils.UserState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +26,5 @@ public class TelegramChat {
 
     @Column(name = "username", columnDefinition = "varchar(150)")
     private String userName;
-
-    @Transient
-    private UserState userState = UserState.NONE;
 
 }

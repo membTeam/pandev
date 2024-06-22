@@ -1,29 +1,22 @@
 package com.pandev.utils;
 
 
-import com.pandev.entities.TelegramChat;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.repositories.TelegramChatRepository;
 import com.pandev.templCommand.CommCommand;
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.pandev.utils.Constants.*;
 
 @Service
 public class ResponseHandl {
 
-    //private final Map<Long, UserState> chatStates;
     private final CommCommand commCommand;
     private final FileAPI fileAPI;
     private final TelegramChatRepository telegramChatRepo;
