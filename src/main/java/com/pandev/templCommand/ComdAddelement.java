@@ -101,6 +101,13 @@ public class ComdAddelement implements TemplCommand{
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
         groupRepo = commServ.getGroupsRepo();
 
+        if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
+            return commServ.getResponseHandl().initMessage(mess.getChatId(),
+                    "Формат команды должен включать:\n" +
+                    "идентификатор команды и один или два аргумента\n"+
+                    "Смотреть образец /help");
+        }
+
         try {
             if (dtoParser.arrParams().length == 1) {
                 return addRootElement(mess.getChatId(), dtoParser.arrParams(), commServ);

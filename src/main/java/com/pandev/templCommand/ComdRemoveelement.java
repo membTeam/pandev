@@ -1,6 +1,8 @@
 package com.pandev.templCommand;
 
 import com.pandev.entities.Groups;
+import com.pandev.utils.DTOparser;
+import com.pandev.utils.ParserMessage;
 import jakarta.transaction.Transactional;
 import lombok.NoArgsConstructor;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,11 +20,19 @@ public class ComdRemoveelement implements TemplCommand {
     @Override
     public SendMessage applyMethod(Message mess, CommService commServ) {
 
+        DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
+        if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
+            return commServ.getResponseHandl().initMessage(mess.getChatId(),
+                    "Формат команды должен включать:\n" +
+                            "идентификатор команды и один аргумент\n"+
+                            "Смотреть образец /help");
+        }
+
         var groupRepo = commServ.getGroupsRepo();
         var result = commServ.getResponseHandl()
                 .initMessage(mess.getChatId(), null);
 
-        var strGroups = mess.getText().trim().toLowerCase();
+        var strGroups = dtoParser.arrParams()[0].trim().toLowerCase();
 
         try {
             var currElement = groupRepo.findByTxtgroup(strGroups);

@@ -37,7 +37,7 @@ public class ParserMessage {
             if (indexSeparator < 0) {
                 arrParams = new String[]{strParams};
             } else {
-                arrParams = new String[]{strParams.substring(0, indexSpace),
+                arrParams = new String[]{strParams.substring(0, indexSeparator),
                         strParams.substring(indexSeparator).trim() };
             }
         }

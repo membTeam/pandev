@@ -60,7 +60,7 @@ public class TelegramBot extends AbilityBot {
         responseHandl.init(this.silent);
     }
 
-    public void downloadDocument(Update update)  {
+    private void downloadDocument(Update update)  {
 
         var document = update.getMessage().getDocument();
         var chatId = update.getMessage().getChatId();
@@ -91,14 +91,14 @@ public class TelegramBot extends AbilityBot {
         BiConsumer<BaseAbilityBot, Update> action =
                 (abilityBot, upd) -> responseHandl.replyToDistributionMess(upd);
 
-        return Reply.of(action, Flag.TEXT,upd -> responseHandl.userIsActive(getChatId(upd)));
+        return Reply.of(action, Flag.TEXT,upd -> true);
     }
 
     public Reply replyToDocument() {
         BiConsumer<BaseAbilityBot, Update> action =
                 (abilityBot, upd) -> downloadDocument(upd);
 
-        return Reply.of(action, Flag.DOCUMENT,upd -> replyToDocument(upd));
+        return Reply.of(action, Flag.DOCUMENT,upd -> true);
     }
 
     public Ability startBot() {
@@ -110,11 +110,6 @@ public class TelegramBot extends AbilityBot {
                 .privacy(PUBLIC)
                 .action(ctx -> responseHandl.replyToDistributionMess(ctx.update()))
                 .build();
-    }
-
-
-    private boolean replyToDocument(Update update) {
-        return true;
     }
 
     @Override
