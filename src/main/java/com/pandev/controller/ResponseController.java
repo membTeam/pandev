@@ -1,23 +1,17 @@
 package com.pandev.controller;
 
+import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.FileAPI;
-import com.pandev.utils.InitListViewWithFormated;
 import com.pandev.utils.ParserMessage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 import static com.pandev.utils.Constants.*;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.repositories.TelegramChatRepository;
-import com.pandev.templCommand.CommCommand;
-
-import java.io.Serializable;
 
 
 @Service
@@ -25,17 +19,12 @@ public class ResponseController {
 
     private final CommCommand commCommand;
     private final FileAPI fileAPI;
-    private final TelegramChatRepository telegramChatRepo;
     private SilentSender sender;
-    private final GroupsRepository groupsRepository;
 
-    public ResponseController(CommCommand commCommand, FileAPI fileAPI, TelegramChatRepository telegramChatRepo,
-                              GroupsRepository groupsRepository) {
+    public ResponseController(CommCommand commCommand, FileAPI fileAPI  ) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
-        this.telegramChatRepo = telegramChatRepo;
 
-        this.groupsRepository = groupsRepository;
     }
 
     @PostConstruct
@@ -116,12 +105,6 @@ public class ResponseController {
             }
         }
     }
-
-    /*public void replyToView(long chatId) {
-        var strFormated = InitListViewWithFormated.initViewFormated(groupsRepository);
-        var message = initMessage(chatId, strFormated);
-        sender.execute(commCommand.initMessageFromStrCommand(message));
-    }*/
 
     /**
      * Создание шаблона текстового сообщения.
