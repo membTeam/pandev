@@ -97,10 +97,8 @@ public class TelegramBot extends AbilityBot {
     public Reply replyToDocument() {
         BiConsumer<BaseAbilityBot, Update> action =
                 (abilityBot, upd) -> downloadDocument(upd);
-        //responseHandl.replyToDocument(upd);
 
         return Reply.of(action, Flag.DOCUMENT,upd -> replyToDocument(upd));
-        // responseHandl.userIsActive(getChatId(upd))
     }
 
     public Ability startBot() {

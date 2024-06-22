@@ -274,18 +274,6 @@ public class ResponseHandl {
         }
     }
 
-    /**
-     * Обработка документов excel
-     * @param update
-     */
-    public void replyToDocument(Update update) {
-      /*  var message = update.getMessage();
-        var resFile = telegramBot.downloadDocument(message);
-
-        sender.execute(
-                initMessage(message.getChatId(), resFile.value().toString()));*/
-    }
-
     public boolean userIsActive(Long chatId) {
         return chatStates.containsKey(chatId);
     }
