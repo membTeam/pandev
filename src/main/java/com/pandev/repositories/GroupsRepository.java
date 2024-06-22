@@ -104,10 +104,10 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     @Query(value = "select exists(select * from groups where txtgroup = lower(trim(:txtgroup)) and parentnode = :parentnode)", nativeQuery = true)
     boolean isExistsBytxtgroupAndParentnode(String txtgroup, Integer parentnode);
 
-
-
-
-
+    @Query(value = "select new com.pandev.repositories.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
+            "from Groups g join Groups s on g.rootnode = s.id " +
+            "order by g.rootnode, g.ordernum")
+    List<DTOgroups> findAllGroups();
 
 
 }

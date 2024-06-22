@@ -1,36 +1,123 @@
 package com.pandev.utils.excelAPI;
 
 import com.pandev.entities.Groups;
+import com.pandev.repositories.DTOgroups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOresult;
 import com.pandev.utils.InitListGroups;
 import jakarta.transaction.Transactional;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @Service
 public class ExcelService {
 
     private final String PATH_DIR_EXTENAL;
+    private final String FILE_EXCEL_TEMPLATE;
+    private final String FILE_EXCEL_DOWNLOAD;
 
     private final GroupsRepository groupsRepo;
 
-    public ExcelService(@Value("${path-external-resource}") String dirExtenal, GroupsRepository groupsRepo) {
+    public ExcelService(@Value("${path-external-resource}") String dirExtenal,
+                        @Value("${file-excel-template}") String excelTemplate,
+                        @Value("${file-excel-download}") String fileexcelDownload,
+                        GroupsRepository groupsRepo) {
+
+        FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;
+        FILE_EXCEL_DOWNLOAD = fileexcelDownload;
+
         this.groupsRepo = groupsRepo;
     }
+
+    public DTOresult writeGridsToExcel() {
+
+        var objCells = new Object(){
+            private int rowNum = 1;
+            private int indexNum = 1;
+
+            public Cell createCell(Workbook wb, Row row, int column, HorizontalAlignment align) {
+                var cell = row.createCell(column);
+                var cellStyle = wb.createCellStyle();
+
+                cellStyle.setAlignment(align);
+                cell.setCellStyle(cellStyle);
+
+                return cell;
+            }
+
+            public int getRowNum() {
+                return rowNum++;
+            }
+            public int getIndexNum() {
+                return indexNum++;
+            }
+        };
+
+        Path path = Paths.get(FILE_EXCEL_TEMPLATE);
+        try {
+            List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroups();
+            FileInputStream file = new FileInputStream(new File(path.toString()));
+
+            Workbook workbook = new XSSFWorkbook(file);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // №№ п.п.	orderNum	orderLevel	rootNode	subNode
+            lsDTOgroups.forEach(dtoExcel-> {
+                var row = sheet.createRow(objCells.getRowNum());
+
+                var cellStream = IntStream.range(0, 4);
+                cellStream.forEach(numCell-> {
+
+                    var horisontalAlignment = switch (numCell) {
+                        case 0,1,2 -> HorizontalAlignment.CENTER;
+                        default -> HorizontalAlignment.LEFT;
+                    };
+
+                    var cell = objCells.createCell(workbook, row, numCell, horisontalAlignment);
+
+                    switch (numCell) {
+                        case 0 -> cell.setCellValue(objCells.getIndexNum());
+                        case 1 -> cell.setCellValue(dtoExcel.ordernum());
+                        case 2 -> cell.setCellValue(dtoExcel.levelnum());
+                        case 3 -> cell.setCellValue(dtoExcel.roottxt());
+                        default -> cell.setCellValue(dtoExcel.txtgroup());
+                    }
+                });
+            });
+
+            Path pathDownload = Paths.get(FILE_EXCEL_DOWNLOAD);
+            try {
+                Files.deleteIfExists(pathDownload);
+            } catch (Exception ex) {  }
+
+            FileOutputStream outputStream = new FileOutputStream(pathDownload.toAbsolutePath().toString());
+            workbook.write(outputStream);
+            workbook.close();
+
+            return new DTOresult(true, "Ok");
+
+        } catch (Exception ex) {
+            return new DTOresult(false, ex.getMessage());
+        }
+
+    }
+
 
     public List<RecordDTOexcel> readFromExcel(String strFile) {
         var path = Paths.get(PATH_DIR_EXTENAL, strFile);
@@ -53,6 +140,8 @@ public class ExcelService {
 
                 var cell1 = row.getCell(0).getRichStringCellValue().getString();
                 var cell2 = row.getCell(1).getRichStringCellValue().getString();
+
+
 
                 var dto = new RecordDTOexcel(cell1, cell2);
                 resultData.add(dto);

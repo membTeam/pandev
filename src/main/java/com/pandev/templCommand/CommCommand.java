@@ -7,6 +7,8 @@ import com.pandev.utils.ParserMessage;
 import com.pandev.controller.ResponseController;
 import com.pandev.utils.excelAPI.ExcelService;
 
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -20,10 +22,13 @@ import java.lang.reflect.Constructor;
  */
 @Service
 public class CommCommand implements CommService {
-
+    @Getter
     private final GroupsRepository groupsRepo;
+    @Getter
     private final FileAPI fileAPI;
+    @Getter
     private final ExcelService excelService;
+    @Getter
     private ResponseController responseHandl;
 
     public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService1) {
@@ -64,26 +69,6 @@ public class CommCommand implements CommService {
         } catch (Exception e) {
             return getResponseHandl().initMessage(dtoParser.chatId(),"внутренняя ошибка.");
         }
-    }
-
-    @Override
-    public ExcelService getExcelService() {
-        return excelService;
-    }
-
-    @Override
-    public GroupsRepository getGroupsRepo() {
-        return groupsRepo;
-    }
-
-    @Override
-    public ResponseController getResponseHandl() {
-        return responseHandl;
-    }
-
-    @Override
-    public FileAPI getFileAPI() {
-        return fileAPI;
     }
 
 }

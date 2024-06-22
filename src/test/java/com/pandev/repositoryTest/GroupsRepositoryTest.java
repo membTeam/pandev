@@ -18,6 +18,12 @@ public class GroupsRepositoryTest {
 
 
     @Test
+    public void findAllGroups() {
+        var res = groupsRepo.findAllGroups();
+        assertTrue(res.size()>0);
+    }
+
+    @Test
     public void findAllGroupsByParentId() {
         var res = groupsRepo.findAllGroupsByParentId(19, 19);
 
@@ -52,7 +58,6 @@ public class GroupsRepositoryTest {
 
 
     }
-
 
     @Test
     public void maxOrdernum() {
