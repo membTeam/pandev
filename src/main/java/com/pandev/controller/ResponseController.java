@@ -45,28 +45,8 @@ public class ResponseController {
         this.sender = telegramBot.silent();
     }
 
-    /*public void init(SilentSender sender) {
-        this.sender = sender;
-    }*/
-
     /**
-     * Остановка telegramBot и закрытие ВСЕХ ресурсов.
-     * Повторный вход только через кнопку start или команду /start
-     * @param chatId
-     */
-    private void stopChat(long chatId) {
-        SendMessage sendMessage = initMessage(chatId,
-                "Спасибо, что использовали наш TelegramBot" +
-                "\nНажмите /start чтобы повторить общение.");
-
-        sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
-
-        sender.execute(sendMessage);
-    }
-
-
-    /**
-     * Не опознанная команда сообщения
+     * Создание сообщения, если команда Не опознанная
      * @param chatId
      */
     private void unexpectedCommand(long chatId) {
@@ -75,8 +55,7 @@ public class ResponseController {
 
 
     /**
-     * Инициализация старта. Если пользователь не зарегистрирован, создается приглашение ввести имя.
-     * Ответ пользователя обрабатывается в методе replyToName где будет регистрация в БД.
+     * Создание стартового сообщения
      * @param chatId
      */
     public void replyToStart(long chatId) {
@@ -120,6 +99,10 @@ public class ResponseController {
         }
     }
 
+    /**
+     * Сообщение с вспомогательным текстом как загружать Excel документ
+     * @param chatId
+     */
     private void replyToUpload(long chatId) {
         var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
                 "Вставьте документ Excel.";
@@ -127,6 +110,13 @@ public class ResponseController {
                 initMessage(chatId, text) );
     }
 
+    /**
+     * Создание и выгрузка файла Excel.
+     * Создается в соответствии с шаблоном any-data/extenal-resource/template.xlsx.
+     * Метод excelService.writeGroupsToExcel() создает файл any-data/extenal-resource/download.xlsx,
+     * который используется для download
+     * @param chatId
+     */
     private void replyToDownload(long chatId) {
         var resDTO =  excelService.writeGroupsToExcel();
 
