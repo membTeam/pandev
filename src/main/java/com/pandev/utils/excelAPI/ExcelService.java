@@ -82,16 +82,15 @@ public class ExcelService {
             // №№ п.п.	orderNum	orderLevel	rootNode	subNode
             lsDTOgroups.forEach(dtoExcel-> {
                 var row = sheet.createRow(objCells.getRowNum());
+                int numCell = -1;
 
-                var cellStream = IntStream.range(0, 4);
-                cellStream.forEach(numCell-> {
-
-                    var horisontalAlignment = switch (numCell) {
+                while (++numCell < 5) {
+                    var hAlignment = switch (numCell) {
                         case 0,1,2 -> HorizontalAlignment.CENTER;
                         default -> HorizontalAlignment.LEFT;
                     };
 
-                    var cell = objCells.createCell(workbook, row, numCell, horisontalAlignment);
+                    var cell = objCells.createCell(workbook, row, numCell, hAlignment);
 
                     switch (numCell) {
                         case 0 -> cell.setCellValue(objCells.getIndexNum());
@@ -100,7 +99,7 @@ public class ExcelService {
                         case 3 -> cell.setCellValue(dtoExcel.roottxt());
                         default -> cell.setCellValue(dtoExcel.txtgroup());
                     }
-                });
+                }
             });
 
             Path pathDownload = Paths.get(FILE_EXCEL_DOWNLOAD);
