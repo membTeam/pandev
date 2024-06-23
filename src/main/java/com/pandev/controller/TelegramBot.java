@@ -1,29 +1,20 @@
 package com.pandev.controller;
 
 
-import com.pandev.repositories.TelegramChatRepository;
-import com.pandev.templCommand.CommCommand;
-import com.pandev.utils.Constants;
-import com.pandev.utils.DTOresult;
-import com.pandev.utils.FileAPI;
 
-import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.constraints.PastOrPresent;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.bot.BaseAbilityBot;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Reply;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,7 +22,11 @@ import java.util.function.BiConsumer;
 
 import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
-import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
+
+import com.pandev.utils.Constants;
+import com.pandev.utils.FileAPI;
+import com.pandev.utils.excelAPI.ExcelService;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
 public class TelegramBot extends AbilityBot {
@@ -57,10 +52,30 @@ public class TelegramBot extends AbilityBot {
 
     @PostConstruct
     private void init() {
-        responseHandl.init(this.silent);
+        responseHandl.init(this);
     }
 
-    private void downloadDocument(Update update)  {
+    /*public void downloadDocument(long chatId) throws TelegramApiException {
+        var resDTO =  excelService.writeGridsToExcel();
+
+        if (!resDTO.res()) {
+            sender.execute(
+                    responseHandl.initMessage(chatId, "Не известная ошибка загрузки файла.") );
+            return;
+        }
+
+        var strPath = ((Path) resDTO.value()).toAbsolutePath().toString();
+        InputFile document = new InputFile(new java.io.File(strPath));
+
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setChatId(chatId);
+        sendDocument.setCaption("Дерево групп");
+        sendDocument.setDocument(document);
+
+        sender.sendDocument(sendDocument);
+    }*/
+
+    private void uploadDocument(Update update)  {
 
         var document = update.getMessage().getDocument();
         var chatId = update.getMessage().getChatId();
@@ -96,7 +111,7 @@ public class TelegramBot extends AbilityBot {
 
     public Reply replyToDocument() {
         BiConsumer<BaseAbilityBot, Update> action =
-                (abilityBot, upd) -> downloadDocument(upd);
+                (abilityBot, upd) -> uploadDocument(upd);
 
         return Reply.of(action, Flag.DOCUMENT,upd -> true);
     }

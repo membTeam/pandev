@@ -4,10 +4,8 @@ import com.pandev.entities.Groups;
 import com.pandev.repositories.DTOgroups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOresult;
-import com.pandev.utils.InitListGroups;
 import jakarta.transaction.Transactional;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,7 +43,7 @@ public class ExcelService {
         this.groupsRepo = groupsRepo;
     }
 
-    public DTOresult writeGridsToExcel() {
+    public DTOresult writeGroupsToExcel() {
 
         var objCells = new Object(){
             private int rowNum = 1;
@@ -110,7 +108,7 @@ public class ExcelService {
             workbook.write(outputStream);
             workbook.close();
 
-            return new DTOresult(true, "Ok");
+            return new DTOresult(true, pathDownload);
 
         } catch (Exception ex) {
             return new DTOresult(false, ex.getMessage());
