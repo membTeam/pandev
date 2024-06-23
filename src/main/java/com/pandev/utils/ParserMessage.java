@@ -3,10 +3,15 @@ package com.pandev.utils;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
- * Парсинг Message. Выделение из Message chatId, strCommand and strParams
+ * Парсинг Message. Выделение из Message структуры данных: chatId, strCommand and String[] strParams
  */
 public class ParserMessage {
 
+    /**
+     * Выделение из Message субСтроки команды
+     * @param message
+     * @return
+     */
     public static String getstrCommandFromMessage(Message message) {
         var text = message.getText();
         var indexSpace = text.indexOf(" ");
@@ -17,6 +22,12 @@ public class ParserMessage {
         }
     }
 
+    /**
+     * Парсинг Message. Выделение структуры данных:
+     * chatId, strCommand, String[] параметров.
+     * @param message
+     * @return
+     */
     public static DTOparser getParsingMessage(Message message) {
 
         long chatId = message.getChatId();
