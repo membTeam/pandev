@@ -63,7 +63,8 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
 
     /**
      * Используется после удаления узла для обновления поля Groups.ordernum
-     * Запускается после обработки скрипта findAllGroupsByParentIdExt
+     * Запускается после обработки скрипта findAllGroupsByParentIdExt.
+     * Использование order by g.ordernum обязательно. Т.к. возникают исключения из-за ограничений на уровне таблицы
      * @param rootnode удаляемый узел
      * @return
      */
@@ -98,15 +99,14 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
             "order by g.rootnode, g.ordernum")
     List<DTOgroups> findAllGroupsToDownload();
 
+    /**
+     * Выборка связанных записей для удаления элементов
+     * @param groupid
+     * @return
+     */
     @Query(value = "select g from Groups g " +
             "where g.rootnode = (select r.rootnode from Groups r where r.id = :groupid) " +
-            "and g.parentnode >= :groupid " +
-            "and g.levelnum > (select l.levelnum from Groups l where l.id = :groupid)")
+            "and g.parentnode >= :groupid"  )
     List<Groups> selectGroupsForDelete(Integer groupid);
-
-    /*@Query(value = "select g from Groups g " +
-            "where g.rootnode = (select r.rootnode from Groups r where r.id = :groupid) " +
-            "and g.parentnode > (select p.id from Groups p where p.id = :groupid) " +
-            "and g.levelnum > (select l.levelnum from Groups l where l.id = :groupid)")*/
 
 }

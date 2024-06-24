@@ -1,13 +1,8 @@
 package com.pandev.templCommand;
 
-import com.pandev.entities.Groups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOparser;
-import com.pandev.utils.ParserMessage;
+
 import jakarta.transaction.Transactional;
 import lombok.NoArgsConstructor;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +10,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+
+import com.pandev.entities.Groups;
+import com.pandev.utils.DTOparser;
+import com.pandev.utils.ParserMessage;
 
 /**
  * Класс удаление элемента по строковому идентификатору группы
@@ -23,6 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @NoArgsConstructor
 public class ComdRemoveelement implements TemplCommand {
 
+    /**
+     * Подготовка связанной структуры данных, которая будет удалена вместе с удаляемым элементом
+     * @param groups
+     * @param commServ
+     * @return
+     */
     private List<Groups> dataPreparation(Groups groups, CommService commServ) {
 
         var objMapInit = new Object(){
@@ -36,16 +42,16 @@ public class ComdRemoveelement implements TemplCommand {
         Map<Integer, List<Groups>> mapTreeLevelnum = new TreeMap<>();
         Map<Integer, Groups> mapResult = new HashMap<>();
 
-        var lsSelGroups = commServ.getGroupsRepo()
+        var lsSelectGroupsForDelete = commServ.getGroupsRepo()
                             .selectGroupsForDelete(groups.getId());
-        if (lsSelGroups.size() == 0) {
-            return lsSelGroups;
+        if (lsSelectGroupsForDelete.size() == 0) {
+            return lsSelectGroupsForDelete;
         }
 
-        var mapGroups = lsSelGroups.stream().collect(Collectors
+        var mapGroupsByLevernum = lsSelectGroupsForDelete.stream().collect(Collectors
                 .groupingBy(Groups::getLevelnum));
 
-        for (var item : mapGroups.entrySet()) {
+        for (var item : mapGroupsByLevernum.entrySet()) {
             mapTreeLevelnum.put(item.getKey(), item.getValue());
         }
 
