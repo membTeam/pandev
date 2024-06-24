@@ -20,7 +20,6 @@ public class GroupsRepository3Test {
     private GroupsRepository groupsRepo;
 
 
-
     @Test
     public void findAllGroupsForUpdateOrdernum_existsData () {
         var res = groupsRepo.findAllGroupsForUpdateOrdernum(171);
@@ -29,36 +28,24 @@ public class GroupsRepository3Test {
     }
 
     @Test
-    public void findAllGroupsForUpdateOrdernum_noData () {
-        var res = groupsRepo.findAllGroupsForUpdateOrdernum(176);
+    public void findAllGroupsForUpdateOrdernum_notExists () {
+        var res = groupsRepo.findAllGroupsForUpdateOrdernum(10000);
 
         assertFalse(res.size()>0);
     }
 
     @Test
-    public void findAllGroupsByParentIdExt_notExists() {
-        var res = groupsRepo.findAllGroupsByParentIdExt(172);
+    public void findAllGroupsForDelete_notExists() {
+        var res = groupsRepo.findAllGroupsForDelete(10000);
 
         assertFalse(res.size()>0);
-
     }
 
     @Test
-    public void findAllGroupsByParentIdExt() {
-        var res = groupsRepo.findAllGroupsByParentIdExt(176);
+    public void findAllGroupsForDelete_exists() {
+        var res = groupsRepo.findAllGroupsForDelete(174);
 
         assertTrue(res.size()>0);
-
-    }
-
-
-    @Test
-    public void convListObjToListGroups() {
-        var res = groupsRepo.findAllRowsAfterCurrentStruct("управленцы", 171);
-
-        var resConv = InitListGroups.convListObjToListGroups(res);
-
-        assertTrue(resConv.size()>0);
     }
 
 }

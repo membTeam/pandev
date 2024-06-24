@@ -14,32 +14,27 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
 
     /**
      * Верификация наличия записей в таблице.
-     * Используется перед начальной загрузкой данных
+     * Используется перед начальной загрузкой данных (class LoadData)
      * @return
      */
     @Query(value = "select exists(select * from groups)",nativeQuery = true)
     boolean isExistsData();
 
+    /**
+     * Используется для команды telegramBot /viewTree
+     * @return
+     */
     @Query(value = "select new com.pandev.entities.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.rootnode, g.ordernum")
     List<GroupsDetails> getTreeData();
 
     Groups findByTxtgroup(String txtgroup );
 
-    @Query(value = "select * from groups where id = (select coalesce(min(id), -1) from groups)", nativeQuery = true)
-    Groups firstElement();
-
     /**
-     * Выборка строк таблицы в которых будут обновляться значения ordernum.
-     * В итоге все эти элементы будут смещены по структуре отностельно корневого элемента
-     * Используется при добавлении субЭлементов
-     * @param txtgroup строковый идентификатор узла. Значения уникальные на уровне таблицы
+     * Используется для модульных тестов
      * @return
      */
-    @Query(value = "select id, rootnode, parentnode, txtgroup, ordernum, levelnum from groups " +
-            "where ordernum > (select coalesce(max(ordernum), 2147483640) " +
-            "from groups where parentnode = (select id from groups where txtgroup = lower(trim(:txtgroup)) ) ) " +
-            "and rootnode = :rootId order by ordernum desc", nativeQuery = true)
-    List<List<Object>> findAllRowsAfterCurrentStruct(String txtgroup, Integer rootId);
+    @Query(value = "select * from groups where id = (select coalesce(min(id), -1) from groups)", nativeQuery = true)
+    Groups firstElement();
 
     /**
      * Перед добавлением элемента делается выборка записей, которые будут расположены после этой.
@@ -56,26 +51,24 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     List<List<Object>> findAllGroupsByParentId(Integer parentid, Integer rootId);
 
     /**
-     * Выборка ВСЕХ записей, связанных через parentnode and ordernum.
+     * Выборка ВСЕХ записей, связанных через deletednode and ordernum.
      * Используется при удаления элемента
-     * @param parentnode удаляемый узел
+     * @param deletednode удаляемый узел
      * @return
      */
     @Query(value = "select * from groups " +
-            "where rootnode = (select rootnode from groups where id = :parentnode ) " +
-            "and ordernum in ( select ordernum from groups where parentnode = :parentnode )", nativeQuery = true)
-    List<Groups> findAllGroupsByParentIdExt(Integer parentnode);
+            "where rootnode = (select rootnode from groups where id = :deletednode ) " +
+            "and ordernum in ( select ordernum from groups where parentnode = :deletednode )", nativeQuery = true)
+    List<Groups> findAllGroupsForDelete(Integer deletednode);
 
     /**
-     * Все записи расположенные ниже удаляемой в контексте корневого узла,
-     * обновляются по полю ordernum.
-     * Используется после удаления узла.
+     * Используется после удаления узла для обновления поля Groups.ordernum
      * Запускается после обработки скрипта findAllGroupsByParentIdExt
-     * @param rootNode удаляемый узел
+     * @param rootnode удаляемый узел
      * @return
      */
-    @Query(value = "select * from groups where rootNode = :rootNode and ordernum > 0", nativeQuery = true)
-    List<Groups> findAllGroupsForUpdateOrdernum(Integer rootNode);
+    @Query(value = "FROM Groups g where g.rootnode = :rootnode and g.ordernum > 0 order by g.ordernum")
+    List<Groups> findAllGroupsForUpdateOrdernum(Integer rootnode);
 
     /**
      * Максимальное значение ordernum из дочерних записей.
@@ -88,26 +81,32 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
             "when exists(Select * from groups where rootnode = :rootnode ) " +
             "then (select max(ordernum) from groups where rootnode = :rootnode ) " +
             "else (select ordernum from groups where id = :parentnode) " +
-            "end max_order_num", nativeQuery = true)
+            "end", nativeQuery = true)
     Integer maxOrdernum(Integer rootnode, Integer parentnode);
-
-    @Query("select g from Groups g where g.rootnode = :rootnode and g.ordernum > :ordernum order by g.ordernum")
-    List<Groups> findListGroupsByOrdernum(Integer rootnode, int ordernum);
 
     @Query("select g from Groups g where g.rootnode = :rootnode")
     List<Groups> findAllElementByRootNode(Integer rootnode);
 
-    List<Groups> findAllByTxtgroupIn(List<String> ls);
-
-    List<Groups> findAllByParentnodeInAndOrdernumNot(List<Integer> ls, int ordernum);
-
     @Query(value = "select exists(select * from groups where txtgroup = lower(trim(:txtgroup)) and parentnode = :parentnode)", nativeQuery = true)
     boolean isExistsBytxtgroupAndParentnode(String txtgroup, Integer parentnode);
 
+    /** Создание List<DTOgroups> для выгрузки данных в Excel
+     * @return
+     */
     @Query(value = "select new com.pandev.repositories.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
-            "from Groups g join Groups s on g.rootnode = s.id " +
+            "from Groups g join Groups s on g.parentnode = s.id " +
             "order by g.rootnode, g.ordernum")
-    List<DTOgroups> findAllGroups();
+    List<DTOgroups> findAllGroupsToDownload();
 
+    @Query(value = "select g from Groups g " +
+            "where g.rootnode = (select r.rootnode from Groups r where r.id = :groupid) " +
+            "and g.parentnode >= :groupid " +
+            "and g.levelnum > (select l.levelnum from Groups l where l.id = :groupid)")
+    List<Groups> selectGroupsForDelete(Integer groupid);
+
+    /*@Query(value = "select g from Groups g " +
+            "where g.rootnode = (select r.rootnode from Groups r where r.id = :groupid) " +
+            "and g.parentnode > (select p.id from Groups p where p.id = :groupid) " +
+            "and g.levelnum > (select l.levelnum from Groups l where l.id = :groupid)")*/
 
 }

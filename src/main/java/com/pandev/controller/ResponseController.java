@@ -118,7 +118,7 @@ public class ResponseController {
      * @param chatId
      */
     private void replyToDownload(long chatId) {
-        var resDTO =  excelService.writeGroupsToExcel();
+        var resDTO =  excelService.downloadGroupsToExcel();
 
         if (!resDTO.res()) {
             sender.execute(
