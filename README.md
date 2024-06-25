@@ -34,8 +34,8 @@
 - COMD_HELP -> /help
 - COMD_VIEW_TREE -> /viewTree
 - COMD_START -> /start
-- COMD_DOWNLOAD -> /download 
-- COMD_UPLOAD -> /upload
+- COMD_DOWNLOAD -> /download (Выгрузка данных в Excel)
+- COMD_UPLOAD -> /upload (Загрузка элементов в БД из Excel)
 
 ## Текстовые сообщения (загружаются из соответствующих файлов):
 - FILE_START_NOT_REGISTER_USER -> start-text.txt приглашение для не зарегистрированного пользователя
