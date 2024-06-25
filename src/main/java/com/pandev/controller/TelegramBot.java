@@ -1,94 +1,60 @@
 package com.pandev.controller;
 
-
-
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.repositories.TelegramChatRepository;
-import com.pandev.templCommand.CommCommand;
-import com.pandev.utils.*;
-import com.pandev.utils.excelAPI.ExcelService;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.telegram.abilitybots.api.bot.AbilityBot;
+import org.telegram.abilitybots.api.bot.BaseAbilityBot;
+import org.telegram.abilitybots.api.objects.Ability;
+import org.telegram.abilitybots.api.objects.Flag;
+import org.telegram.abilitybots.api.objects.Reply;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.io.*;
+import static org.telegram.abilitybots.api.objects.Locality.USER;
+import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
+
+import jakarta.annotation.PostConstruct;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
-import org.springframework.stereotype.Service;
-import org.telegram.abilitybots.api.bot.AbilityBot;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Reply;
-import org.telegram.abilitybots.api.bot.BaseAbilityBot;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.abilitybots.api.objects.Flag;
-import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
-import static org.telegram.abilitybots.api.objects.Locality.USER;
-import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
+import com.pandev.utils.Constants;
+import com.pandev.utils.FileAPI;
+import com.pandev.utils.excelAPI.ExcelService;
 
 @Service
 public class TelegramBot extends AbilityBot {
 
-    private final String userName;
     private final String externameResource;
 
-    @Getter
-    private final GroupsRepository groupsRepo;
-
-    @Getter
     private final ExcelService excelService;
-
-    @Getter
-    private final GroupsApi groupsApi;
-
-    @Getter
-    private final TelegramChatRepository telegramChatRepo;
-
-    @Getter
     private final FileAPI fileAPI;
+    private final ResponseController responseHandl;
 
-    @Getter
-    private ResponseHandl responseHandl;
-
-    @Getter
-    private CommCommand commCommand;
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
-                       @Value("${path-external-resource}") String eternameResource, GroupsRepository groupsRepo, ExcelService excelService, GroupsApi groupsApi,
-                       TelegramChatRepository telegramChatRepo, FileAPI fileAPI,
-                       GroupsRepository groupRepo,
-                       CommCommand commCommand ){
+                       @Value("${path-external-resource}") String eternameResource,
+                       ExcelService excelService, FileAPI fileAPI, ResponseController responseHandl) {
+
         super(token, "userpandev");
 
         this.externameResource = eternameResource;
-        this.groupsRepo = groupsRepo;
         this.excelService = excelService;
-        this.groupsApi = groupsApi;
-        this.telegramChatRepo = telegramChatRepo;
         this.fileAPI = fileAPI;
-
-        this.userName = "userpandev";
-
-        this.commCommand = commCommand;
-        this.responseHandl = new ResponseHandl(silent, db, groupRepo);
+        this.responseHandl = responseHandl;
     }
 
     @PostConstruct
     private void init() {
-        commCommand.init(this, excelService);
         responseHandl.init(this);
     }
 
-    public DTOresult downloadDocument(Message message) {
+    private void uploadDocument(Update update)  {
 
-        var document = message.getDocument();
+        var document = update.getMessage().getDocument();
+        var chatId = update.getMessage().getChatId();
         var fileId = document.getFileId();
 
         try {
@@ -104,27 +70,27 @@ public class TelegramBot extends AbilityBot {
             downloadFile(file, tempFile);
 
             var lsData = excelService.readFromExcel(strFile);
-            return excelService.saveDataByExcelToDb(lsData);
+            excelService.saveDataByExcelToDb(lsData);
 
-        } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
-        }
+            sender.execute(
+                    responseHandl.initMessage(chatId,
+                            "Выполнена загрузка данных из файла"));
+        } catch (Exception ex) { }
     }
 
     public Reply replyToButtons() {
         BiConsumer<BaseAbilityBot, Update> action =
                 (abilityBot, upd) -> responseHandl.replyToDistributionMess(upd);
 
-        return Reply.of(action, Flag.TEXT,upd -> responseHandl.userIsActive(getChatId(upd)));
+        return Reply.of(action, Flag.TEXT,upd -> true);
     }
 
     public Reply replyToDocument() {
         BiConsumer<BaseAbilityBot, Update> action =
-                (abilityBot, upd) -> responseHandl.replyToDocument(upd);
+                (abilityBot, upd) -> uploadDocument(upd);
 
-        return Reply.of(action, Flag.DOCUMENT,upd -> responseHandl.userIsActive(getChatId(upd)));
+        return Reply.of(action, Flag.DOCUMENT,upd -> true);
     }
-
 
     public Ability startBot() {
         return Ability
@@ -133,7 +99,7 @@ public class TelegramBot extends AbilityBot {
                 .info(Constants.START_DESCRIPTION)
                 .locality(USER)
                 .privacy(PUBLIC)
-                .action(ctx -> responseHandl.replyToStart(ctx.chatId()))
+                .action(ctx -> responseHandl.replyToDistributionMess(ctx.update()))
                 .build();
     }
 

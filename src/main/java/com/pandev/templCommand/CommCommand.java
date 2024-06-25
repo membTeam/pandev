@@ -1,11 +1,14 @@
 package com.pandev.templCommand;
 
-import com.pandev.utils.GroupsApi;
-import com.pandev.utils.ResponseHandl;
-import com.pandev.controller.TelegramBot;
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOparser;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.ParserMessage;
+import com.pandev.controller.ResponseController;
 import com.pandev.utils.excelAPI.ExcelService;
+
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,25 +22,25 @@ import java.lang.reflect.Constructor;
  */
 @Service
 public class CommCommand implements CommService {
-
+    @Getter
     private final GroupsRepository groupsRepo;
+    @Getter
     private final FileAPI fileAPI;
+    @Getter
+    private final ExcelService excelService;
+    @Getter
+    private ResponseController responseHandl;
 
-    private TelegramBot telegramBot;
-
-    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService) {
+    public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService1) {
         this.groupsRepo = groupsRepo;
         this.fileAPI = fileAPI;
+        this.excelService = excelService1;
     }
 
-    /**
-     * Дополнительная инициализация из TelegramBot
-     * @param telegramBot
-     */
-    public void init(TelegramBot telegramBot, ExcelService excelService) {
-        this.telegramBot = telegramBot;
-
+    public void init(ResponseController responseHandl) {
+        this.responseHandl = responseHandl;
     }
+
 
     private static String lowercaseFirstLetter(String word) {
         if (word.charAt(0) == '/') {
@@ -46,15 +49,13 @@ public class CommCommand implements CommService {
         return word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
     }
 
-    /**
-     * Создание объекта на основе методов рефлекции
-     * @param message ответное сообщение пользователя
-     * @param strCommand строковый идентификатор команды
-     * @return
-     */
-    public SendMessage initMessageFromStrCommand(Message message, String strCommand) {
 
-        var strFormCommand = String.format("Comd%s", lowercaseFirstLetter(strCommand));
+    public SendMessage initMessageFromStrCommand(Message message) {
+
+        DTOparser dtoParser = ParserMessage.getParsingMessage(message);
+
+        var strFormCommand = String.format("Comd%s",
+                        lowercaseFirstLetter( dtoParser.strCommand().substring(1)));
         var pathClass = String.format("%s.%s",
                 this.getClass().getPackageName(), strFormCommand);
 
@@ -66,32 +67,8 @@ public class CommCommand implements CommService {
             return obj.applyMethod(message, this);
 
         } catch (Exception e) {
-            return getResponseHandl().initMessage(message.getChatId(),"внутренняя ошибка.");
+            return getResponseHandl().initMessage(dtoParser.chatId(),"внутренняя ошибка.");
         }
     }
 
-    @Override
-    public ExcelService getExcelService() {
-        return telegramBot.getExcelService();
-    }
-
-    @Override
-    public GroupsRepository getGroupsRepo() {
-        return groupsRepo;
-    }
-
-    @Override
-    public ResponseHandl getResponseHandl() {
-        return telegramBot.getResponseHandl();
-    }
-
-    @Override
-    public FileAPI getFileAPI() {
-        return fileAPI;
-    }
-
-    @Override
-    public GroupsApi getGroupApi() {
-        return telegramBot.getGroupsApi();
-    }
 }
