@@ -1,0 +1,11 @@
+javascript ## javascript
+javascript ## webdeveloper
+webdeveloper ## тестировщики
+webdeveloper ## программисты
+java ## java
+java ## джюниор
+java ## мидл
+java ## управленцы
+управленцы ## senior
+управленцы ## architect
+architect ## python
