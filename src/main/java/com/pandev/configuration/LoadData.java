@@ -36,7 +36,7 @@ public class LoadData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (groupsRepo.isExistsData()) {
-            log.info("Выполнена загрузка начальных данных");
+            log.info("В БД имеются данные. Загрузка не требуется");
             return;
         }
 
