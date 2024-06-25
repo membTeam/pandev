@@ -3,7 +3,7 @@ javascript ## webdeveloper
 webdeveloper ## тестировщики
 webdeveloper ## программисты
 java ## java
-java ## джюниор
+java ## джуниор
 java ## мидл
 java ## управленцы
 управленцы ## senior
