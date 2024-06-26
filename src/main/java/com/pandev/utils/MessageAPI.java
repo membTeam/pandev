@@ -12,7 +12,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 @Log4j
 public class MessageAPI {
 
-    private final TelegramBot telegramBot;
+    private TelegramBot telegramBot;
+
+    public void init(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
+    }
 
     public static SendMessage initMessage(long chatId, String mes) {
         return SendMessage.builder()

@@ -29,13 +29,15 @@ public class ResponseHandler {
     private SilentSender sender;
     private final ExcelService excelService;
     private TelegramBot telegramBot;
+    private final CommNotificationService commNotificationService;
 
     public ResponseHandler(CommCommand commCommand, FileAPI fileAPI,
-                           ExcelService excelService ) {
+                           ExcelService excelService, CommNotificationService commNotificationService) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
 
         this.excelService = excelService;
+        this.commNotificationService = commNotificationService;
     }
 
     @PostConstruct
@@ -90,7 +92,7 @@ public class ResponseHandler {
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
                            //sender.execute(commNotificationService.responseToMessage(message));
-                            sender.execute(MessageAPI.initMessage(message.getChatId(),"Проверочное сообщение"));
+                            commNotificationService.responseToMessage(message);
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 
@@ -145,18 +147,5 @@ public class ResponseHandler {
         }
 
     }
-
-    /**
-     * Создание шаблона текстового сообщения.
-     * @param chatId
-     * @param mes
-     * @return
-     */
-/*    public SendMessage initMessage(long chatId, String mes) {
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(mes == null ? "empty" : mes)
-                .build();
-    }*/
 
 }
