@@ -31,12 +31,14 @@ public class TelegramBot extends AbilityBot {
 
     private final ExcelService excelService;
     private final FileAPI fileAPI;
-    private final ResponseController responseHandl;
+    private final ResponseHandler responseHandl;
+    private final MessageAPI messageAPI;
 
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
                        @Value("${path-external-resource}") String eternameResource,
-                       ExcelService excelService, FileAPI fileAPI, ResponseController responseHandl) {
+                       ExcelService excelService, FileAPI fileAPI,
+                       ResponseHandler responseHandl, MessageAPI messageAPI) {
 
         super(token, "userpandev");
 
@@ -44,11 +46,13 @@ public class TelegramBot extends AbilityBot {
         this.excelService = excelService;
         this.fileAPI = fileAPI;
         this.responseHandl = responseHandl;
+        this.messageAPI = messageAPI;
     }
 
     @PostConstruct
     private void init() {
         responseHandl.init(this);
+        messageAPI.init(this);
     }
 
     private void uploadDocument(Update update)  {
@@ -73,7 +77,7 @@ public class TelegramBot extends AbilityBot {
             excelService.saveDataByExcelToDb(lsData);
 
             sender.execute(
-                    responseHandl.initMessage(chatId,
+                    MessageAPI.initMessage(chatId,
                             "Выполнена загрузка данных из файла"));
         } catch (Exception ex) { }
     }

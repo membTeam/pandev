@@ -1,7 +1,5 @@
 package com.pandev.controller;
 
-
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -12,32 +10,27 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.nio.file.Path;
 
-import com.pandev.templCommand.CommCommand;
+import static com.pandev.utils.Constants.*;
+import com.pandev.service.motification.CommNotificationService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
-import static com.pandev.utils.Constants.*;
-
 
 @Service
-public class ResponseController {
+public class ResponseHandler {
 
-    private final CommCommand commCommand;
     private final FileAPI fileAPI;
     private SilentSender sender;
     private final ExcelService excelService;
     private TelegramBot telegramBot;
+    private final CommNotificationService commNotificationService;
 
-    public ResponseController(CommCommand commCommand, FileAPI fileAPI, ExcelService excelService) {
-        this.commCommand = commCommand;
+    public ResponseHandler(FileAPI fileAPI,
+                           ExcelService excelService, CommNotificationService commNotificationService) {
         this.fileAPI = fileAPI;
 
         this.excelService = excelService;
-    }
-
-    @PostConstruct
-    private void init() {
-        commCommand.init(this);
+        this.commNotificationService = commNotificationService;
     }
 
     public void init(TelegramBot telegramBot) {
@@ -50,7 +43,7 @@ public class ResponseController {
      * @param chatId
      */
     private void unexpectedCommand(long chatId) {
-        sender.execute(initMessage(chatId, "Команда не опознана."));
+        sender.execute(MessageAPI.initMessage(chatId, "Команда не опознана."));
     }
 
 
@@ -63,12 +56,11 @@ public class ResponseController {
             String file = FILE_START_REGISTER_USER;
             String text = fileAPI.loadDataFromFile(file);
 
-            SendMessage message = initMessage(chatId, text);
+            SendMessage message = MessageAPI.initMessage(chatId, text);
             sender.execute(message);
 
         } catch (Exception ex) {
-            sender.execute(
-                    initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
+            sender.execute(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
     }
@@ -87,7 +79,7 @@ public class ResponseController {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
-                           sender.execute(commCommand.initMessageFromStrCommand(message));
+                            commNotificationService.responseToMessage(message);
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 
@@ -107,7 +99,7 @@ public class ResponseController {
         var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
                 "Вставьте документ Excel.";
         sender.execute(
-                initMessage(chatId, text) );
+                MessageAPI.initMessage(chatId, text) );
     }
 
     /**
@@ -122,7 +114,7 @@ public class ResponseController {
 
         if (!resDTO.res()) {
             sender.execute(
-                    initMessage(chatId, "Не известная ошибка загрузки файла.") );
+                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки файла.") );
             return;
         }
 
@@ -138,22 +130,9 @@ public class ResponseController {
             telegramBot.sender().sendDocument(sendDocument);
         } catch (Exception ex) {
             sender.execute(
-                    initMessage(chatId, "Не известная ошибка загрузки документа.") );
+                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки документа.") );
         }
 
-    }
-
-    /**
-     * Создание шаблона текстового сообщения.
-     * @param chatId
-     * @param mes
-     * @return
-     */
-    public SendMessage initMessage(long chatId, String mes) {
-        return SendMessage.builder()
-                .chatId(chatId)
-                .text(mes == null ? "empty" : mes)
-                .build();
     }
 
 }
