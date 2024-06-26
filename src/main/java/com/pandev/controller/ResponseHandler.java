@@ -1,12 +1,10 @@
 package com.pandev.controller;
 
 
-import com.pandev.service.CommNotificationService;
-import com.pandev.templCommand.CommCommand;
+import com.pandev.service.motification.CommNotificationService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -23,25 +21,18 @@ import static com.pandev.utils.Constants.*;
 @Service
 public class ResponseHandler {
 
-    private final CommCommand commCommand;
     private final FileAPI fileAPI;
     private SilentSender sender;
     private final ExcelService excelService;
     private TelegramBot telegramBot;
     private final CommNotificationService commNotificationService;
 
-    public ResponseHandler(CommCommand commCommand, FileAPI fileAPI,
+    public ResponseHandler(FileAPI fileAPI,
                            ExcelService excelService, CommNotificationService commNotificationService) {
-        this.commCommand = commCommand;
         this.fileAPI = fileAPI;
 
         this.excelService = excelService;
         this.commNotificationService = commNotificationService;
-    }
-
-    @PostConstruct
-    private void init() {
-        commCommand.init(this);
     }
 
     public void init(TelegramBot telegramBot) {

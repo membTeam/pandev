@@ -1,4 +1,4 @@
-package com.pandev.service;
+package com.pandev.service.motification;
 
 
 import org.springframework.stereotype.Component;
