@@ -1,6 +1,11 @@
 package com.pandev.controller;
 
 
+import com.pandev.service.CommNotificationService;
+import com.pandev.templCommand.CommCommand;
+import com.pandev.utils.FileAPI;
+import com.pandev.utils.ParserMessage;
+import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
@@ -12,10 +17,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.nio.file.Path;
 
-import com.pandev.templCommand.CommCommand;
-import com.pandev.utils.FileAPI;
-import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.ExcelService;
 import static com.pandev.utils.Constants.*;
 
 
@@ -28,7 +29,8 @@ public class ResponseHandler {
     private final ExcelService excelService;
     private TelegramBot telegramBot;
 
-    public ResponseHandler(CommCommand commCommand, FileAPI fileAPI, ExcelService excelService) {
+    public ResponseHandler(CommCommand commCommand, FileAPI fileAPI,
+                           ExcelService excelService ) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
 
@@ -87,7 +89,8 @@ public class ResponseHandler {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
-                           sender.execute(commCommand.initMessageFromStrCommand(message));
+                           //sender.execute(commNotificationService.responseToMessage(message));
+                            sender.execute(initMessage(message.getChatId(),"Проверочное сообщение"));
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 
