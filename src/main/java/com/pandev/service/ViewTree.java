@@ -1,12 +1,10 @@
 package com.pandev.service;
 
-import com.pandev.controller.ResponseHandler;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.InitListViewWithFormated;
-import com.pandev.utils.MessageAPI;
+import com.pandev.controller.MessageAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 

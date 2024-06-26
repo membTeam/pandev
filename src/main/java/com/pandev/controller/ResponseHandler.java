@@ -4,7 +4,6 @@ package com.pandev.controller;
 import com.pandev.service.CommNotificationService;
 import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.FileAPI;
-import com.pandev.utils.MessageAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
@@ -91,7 +90,6 @@ public class ResponseHandler {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
-                           //sender.execute(commNotificationService.responseToMessage(message));
                             commNotificationService.responseToMessage(message);
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());

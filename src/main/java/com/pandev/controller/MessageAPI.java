@@ -1,7 +1,6 @@
-package com.pandev.utils;
+package com.pandev.controller;
 
 
-import com.pandev.controller.TelegramBot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
