@@ -20,7 +20,7 @@ import static com.pandev.utils.Constants.*;
 
 
 @Service
-public class ResponseController {
+public class ResponseHandler {
 
     private final CommCommand commCommand;
     private final FileAPI fileAPI;
@@ -28,7 +28,7 @@ public class ResponseController {
     private final ExcelService excelService;
     private TelegramBot telegramBot;
 
-    public ResponseController(CommCommand commCommand, FileAPI fileAPI, ExcelService excelService) {
+    public ResponseHandler(CommCommand commCommand, FileAPI fileAPI, ExcelService excelService) {
         this.commCommand = commCommand;
         this.fileAPI = fileAPI;
 

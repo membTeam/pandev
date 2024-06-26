@@ -31,12 +31,12 @@ public class TelegramBot extends AbilityBot {
 
     private final ExcelService excelService;
     private final FileAPI fileAPI;
-    private final ResponseController responseHandl;
+    private final ResponseHandler responseHandl;
 
 
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
                        @Value("${path-external-resource}") String eternameResource,
-                       ExcelService excelService, FileAPI fileAPI, ResponseController responseHandl) {
+                       ExcelService excelService, FileAPI fileAPI, ResponseHandler responseHandl) {
 
         super(token, "userpandev");
 

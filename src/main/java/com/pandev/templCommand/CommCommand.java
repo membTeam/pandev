@@ -4,11 +4,10 @@ import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOparser;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.controller.ResponseController;
+import com.pandev.controller.ResponseHandler;
 import com.pandev.utils.excelAPI.ExcelService;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -29,7 +28,7 @@ public class CommCommand implements CommService {
     @Getter
     private final ExcelService excelService;
     @Getter
-    private ResponseController responseHandl;
+    private ResponseHandler responseHandl;
 
     public CommCommand(GroupsRepository groupsRepo, FileAPI fileAPI, ExcelService excelService1) {
         this.groupsRepo = groupsRepo;
@@ -37,7 +36,7 @@ public class CommCommand implements CommService {
         this.excelService = excelService1;
     }
 
-    public void init(ResponseController responseHandl) {
+    public void init(ResponseHandler responseHandl) {
         this.responseHandl = responseHandl;
     }
 

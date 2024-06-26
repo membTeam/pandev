@@ -3,7 +3,7 @@ package com.pandev.templCommand;
 
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.FileAPI;
-import com.pandev.controller.ResponseController;
+import com.pandev.controller.ResponseHandler;
 import com.pandev.utils.excelAPI.ExcelService;
 
 /**
@@ -15,7 +15,7 @@ public interface CommService {
 
     GroupsRepository getGroupsRepo();
 
-    ResponseController getResponseHandl();
+    ResponseHandler getResponseHandl();
 
     FileAPI getFileAPI();
 }

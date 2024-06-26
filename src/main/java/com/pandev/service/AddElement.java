@@ -1,40 +1,45 @@
-package com.pandev.templCommand;
+package com.pandev.service;
 
+import com.pandev.controller.ResponseHandler;
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.templCommand.CommService;
+import com.pandev.templCommand.TemplCommand;
 import com.pandev.utils.DTOparser;
 import com.pandev.utils.InitListViewWithFormated;
 import com.pandev.utils.ParserMessage;
+import com.pandev.utils.excelAPI.ExcelService;
 import com.pandev.utils.excelAPI.RecordDTOexcel;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.List;
-
-import com.pandev.utils.DTOparser;
 
 
 /**
  * Класс добавления элементов
  * Два обработчика: добавление корневого или дочернего элемента
  */
-@NoArgsConstructor
-public class ComdAddelement implements TemplCommand{
+@Service(NotificationType.ADD_ELEMENT)
+@RequiredArgsConstructor
+public class AddElement implements NotificationService {
 
-    private GroupsRepository groupRepo;
+    private final GroupsRepository groupRepo;
+    private final ResponseHandler responseHandler;
+    private final ExcelService excelService;
 
     /**
      * ДОбавление корневого элемента
      * Вся логика обработки в ExcelService.saveGroupParentFromExcel
      * @param chatId
      * @param arr
-     * @param commServ интерфейс дополнительного функционала
      * @return
      */
-    private SendMessage addRootElement(long chatId, String[] arr,  CommService commServ) {
+    private SendMessage addRootElement(long chatId, String[] arr) {
 
-        var result = commServ.getResponseHandl()
-                .initMessage(chatId, null);
+        var result = responseHandler.initMessage(chatId, null);
 
         var strGroup = arr[0].trim().toLowerCase();
 
@@ -43,7 +48,7 @@ public class ComdAddelement implements TemplCommand{
                 throw new IllegalArgumentException("Повторный ввод элемента:" + arr[0]);
             }
 
-            var resSave = commServ.getExcelService().saveGroupParentFromExcel(strGroup);
+            var resSave = excelService.saveGroupParentFromExcel(strGroup);
 
             if (!resSave.res()) {
                 throw new IllegalArgumentException(resSave.value().toString());
@@ -63,20 +68,18 @@ public class ComdAddelement implements TemplCommand{
      * Вся логика обработки в ExcelService.saveDataByExcelToDb
      * @param chatId
      * @param arr массив 0 родительский элемент 1 субЭлемент
-     * @param commServ интерфейс дополнительного функционала
      * @return
      */
-    private SendMessage addSubElement(long chatId, String[] arr, CommService commServ ) {
+    private SendMessage addSubElement(long chatId, String[] arr) {
 
-        var result = commServ.getResponseHandl()
-                .initMessage(chatId, null);
+        var result = responseHandler.initMessage(chatId, null);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
             if (parentNode == null) {
-                var strFormatedGroups = InitListViewWithFormated.initViewFormated(commServ.getGroupsRepo());
+                var strFormatedGroups = InitListViewWithFormated.initViewFormated(groupRepo);
 
-                return commServ.getResponseHandl().initMessage(chatId,
+                return responseHandler.initMessage(chatId,
                         "Корневой узел не найден.\n" +
                         "Сверьте свои данные с деревом групп.\n" +
                         "--------------------\n" +
@@ -86,7 +89,7 @@ public class ComdAddelement implements TemplCommand{
             var strSubNode = arr[1];
 
             var valParam = new RecordDTOexcel(parentNode.getTxtgroup(), strSubNode);
-            var resSave = commServ.getExcelService().saveDataByExcelToDb(List.of(valParam));
+            var resSave = excelService.saveDataByExcelToDb(List.of(valParam));
 
             if (!resSave.res()) {
                 throw new IllegalArgumentException(resSave.value().toString());
@@ -102,13 +105,12 @@ public class ComdAddelement implements TemplCommand{
     }
 
     @Override
-    public SendMessage applyMethod(Message mess, CommService commServ) {
+    public SendMessage applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
-        groupRepo = commServ.getGroupsRepo();
 
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            return commServ.getResponseHandl().initMessage(mess.getChatId(),
+            return responseHandler.initMessage(mess.getChatId(),
                     "Формат команды должен включать:\n" +
                     "идентификатор команды и один или два аргумента\n"+
                     "Смотреть образец /help");
@@ -116,14 +118,13 @@ public class ComdAddelement implements TemplCommand{
 
         try {
             if (dtoParser.arrParams().length == 1) {
-                return addRootElement(mess.getChatId(), dtoParser.arrParams(), commServ);
+                return addRootElement(mess.getChatId(), dtoParser.arrParams());
             } else {
-                return addSubElement(mess.getChatId(), dtoParser.arrParams(), commServ);
+                return addSubElement(mess.getChatId(), dtoParser.arrParams());
             }
 
         } catch (Exception ex) {
-           return commServ.getResponseHandl()
-                    .initMessage(mess.getChatId(), ex.getMessage());
+           return responseHandler.initMessage(mess.getChatId(), ex.getMessage());
         }
     }
 }
