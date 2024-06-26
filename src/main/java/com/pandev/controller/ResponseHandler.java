@@ -4,6 +4,7 @@ package com.pandev.controller;
 import com.pandev.service.CommNotificationService;
 import com.pandev.templCommand.CommCommand;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.MessageAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
 import jakarta.annotation.PostConstruct;
@@ -52,7 +53,7 @@ public class ResponseHandler {
      * @param chatId
      */
     private void unexpectedCommand(long chatId) {
-        sender.execute(initMessage(chatId, "Команда не опознана."));
+        sender.execute(MessageAPI.initMessage(chatId, "Команда не опознана."));
     }
 
 
@@ -65,12 +66,11 @@ public class ResponseHandler {
             String file = FILE_START_REGISTER_USER;
             String text = fileAPI.loadDataFromFile(file);
 
-            SendMessage message = initMessage(chatId, text);
+            SendMessage message = MessageAPI.initMessage(chatId, text);
             sender.execute(message);
 
         } catch (Exception ex) {
-            sender.execute(
-                    initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
+            sender.execute(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
     }
@@ -90,7 +90,7 @@ public class ResponseHandler {
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
                            //sender.execute(commNotificationService.responseToMessage(message));
-                            sender.execute(initMessage(message.getChatId(),"Проверочное сообщение"));
+                            sender.execute(MessageAPI.initMessage(message.getChatId(),"Проверочное сообщение"));
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 
@@ -110,7 +110,7 @@ public class ResponseHandler {
         var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
                 "Вставьте документ Excel.";
         sender.execute(
-                initMessage(chatId, text) );
+                MessageAPI.initMessage(chatId, text) );
     }
 
     /**
@@ -125,7 +125,7 @@ public class ResponseHandler {
 
         if (!resDTO.res()) {
             sender.execute(
-                    initMessage(chatId, "Не известная ошибка загрузки файла.") );
+                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки файла.") );
             return;
         }
 
@@ -141,7 +141,7 @@ public class ResponseHandler {
             telegramBot.sender().sendDocument(sendDocument);
         } catch (Exception ex) {
             sender.execute(
-                    initMessage(chatId, "Не известная ошибка загрузки документа.") );
+                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки документа.") );
         }
 
     }
@@ -152,11 +152,11 @@ public class ResponseHandler {
      * @param mes
      * @return
      */
-    public SendMessage initMessage(long chatId, String mes) {
+/*    public SendMessage initMessage(long chatId, String mes) {
         return SendMessage.builder()
                 .chatId(chatId)
                 .text(mes == null ? "empty" : mes)
                 .build();
-    }
+    }*/
 
 }

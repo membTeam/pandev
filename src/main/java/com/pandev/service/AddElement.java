@@ -4,10 +4,12 @@ import com.pandev.controller.ResponseHandler;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOparser;
 import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.utils.MessageAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
 import com.pandev.utils.excelAPI.RecordDTOexcel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -21,11 +23,12 @@ import java.util.List;
  */
 @Service(NotificationType.ADD_ELEMENT)
 @RequiredArgsConstructor
+@Log4j
 public class AddElement implements NotificationService {
 
     private final GroupsRepository groupRepo;
-    private final ResponseHandler responseHandler;
     private final ExcelService excelService;
+    private final MessageAPI messageAPI;
 
     /**
      * ДОбавление корневого элемента
@@ -36,7 +39,7 @@ public class AddElement implements NotificationService {
      */
     private SendMessage addRootElement(long chatId, String[] arr) {
 
-        var result = responseHandler.initMessage(chatId, null);
+        var result = MessageAPI.initMessage(chatId, null);
 
         var strGroup = arr[0].trim().toLowerCase();
 
@@ -69,14 +72,14 @@ public class AddElement implements NotificationService {
      */
     private SendMessage addSubElement(long chatId, String[] arr) {
 
-        var result = responseHandler.initMessage(chatId, null);
+        var result = MessageAPI.initMessage(chatId, null);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
             if (parentNode == null) {
                 var strFormatedGroups = InitListViewWithFormated.initViewFormated(groupRepo);
 
-                return responseHandler.initMessage(chatId,
+                return MessageAPI.initMessage(chatId,
                         "Корневой узел не найден.\n" +
                         "Сверьте свои данные с деревом групп.\n" +
                         "--------------------\n" +
@@ -102,26 +105,27 @@ public class AddElement implements NotificationService {
     }
 
     @Override
-    public SendMessage applyMethod(Message mess) {
+    public void applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
 
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            return responseHandler.initMessage(mess.getChatId(),
+            messageAPI.sendMessage(MessageAPI.initMessage(mess.getChatId(),
                     "Формат команды должен включать:\n" +
                     "идентификатор команды и один или два аргумента\n"+
-                    "Смотреть образец /help");
+                    "Смотреть образец /help"));
         }
 
         try {
             if (dtoParser.arrParams().length == 1) {
-                return addRootElement(mess.getChatId(), dtoParser.arrParams());
+                messageAPI.sendMessage(addRootElement(mess.getChatId(), dtoParser.arrParams()));
             } else {
-                return addSubElement(mess.getChatId(), dtoParser.arrParams());
+                messageAPI.sendMessage(addSubElement(mess.getChatId(), dtoParser.arrParams()));
             }
 
         } catch (Exception ex) {
-           return responseHandler.initMessage(mess.getChatId(), ex.getMessage());
+            log.error(ex.getMessage());
+            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), "Не известная ошибка добавления элемента"));
         }
     }
 }

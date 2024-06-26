@@ -24,10 +24,10 @@ public class NotificationFactory {
         return notificationService;
     }
 
-    public SendMessage execute(Message message) {
+    public void execute(Message message) {
         var strType = NotificationType.getType(message);
         NotificationService notificationService = getNotificationService(strType);
-        return notificationService.applyMethod(message);
+        notificationService.applyMethod(message);
     }
 
 }

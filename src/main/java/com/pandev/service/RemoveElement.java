@@ -3,6 +3,7 @@ package com.pandev.service;
 
 import com.pandev.controller.ResponseHandler;
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.MessageAPI;
 import jakarta.transaction.Transactional;
 
 import java.util.HashMap;
@@ -28,7 +29,7 @@ import com.pandev.utils.ParserMessage;
 public class RemoveElement implements NotificationService {
 
     private final GroupsRepository groupsRepo;
-    private final ResponseHandler responseHandler;
+    private final MessageAPI messageAPI;
 
     /**
      * Подготовка связанной структуры данных, которая будет удалена вместе с удаляемым элементом
@@ -78,17 +79,17 @@ public class RemoveElement implements NotificationService {
 
     @Transactional
     @Override
-    public SendMessage applyMethod(Message mess) {
+    public void applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            return responseHandler.initMessage(mess.getChatId(),
+            messageAPI.sendMessage( messageAPI.initMessage(mess.getChatId(),
                     "Формат команды должен включать:\n" +
                             "идентификатор команды и один аргумент\n"+
-                            "Смотреть образец /help");
+                            "Смотреть образец /help"));
         }
 
-        var result = responseHandler.initMessage(mess.getChatId(), null);
+        var result = MessageAPI.initMessage(mess.getChatId(), null);
 
         var strGroups = dtoParser.arrParams()[0].trim().toLowerCase();
 
@@ -103,7 +104,7 @@ public class RemoveElement implements NotificationService {
                         groupsRepo.findAllElementByRootNode(currElement.getRootnode()) );
 
                 result.setText("Выполнено ПОЛНОЕ удаление всех элементов корневого узла");
-                return  result;
+                messageAPI.sendMessage(result);
             }
 
             var groupsForDelete = dataPreparation(currElement);
@@ -128,6 +129,6 @@ public class RemoveElement implements NotificationService {
             result.setText("Нет данных в БД :" + strGroups);
         }
 
-        return result;
+        messageAPI.sendMessage(result);
     }
 }

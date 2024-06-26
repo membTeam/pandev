@@ -3,6 +3,7 @@ package com.pandev.service;
 import com.pandev.controller.ResponseHandler;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.utils.MessageAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,13 +18,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public class ViewTree implements NotificationService {
 
     private final GroupsRepository groupsRepo;
-    private final ResponseHandler responseHandler;
+    private final MessageAPI messageAPI;
 
     @Override
-    public SendMessage applyMethod(Message mess) {
+    public void applyMethod(Message mess) {
 
         var strFormated = InitListViewWithFormated.initViewFormated(groupsRepo);
-
-        return responseHandler.initMessage(mess.getChatId(), strFormated);
+        messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
     }
 }

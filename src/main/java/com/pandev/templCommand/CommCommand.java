@@ -3,6 +3,7 @@ package com.pandev.templCommand;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOparser;
 import com.pandev.utils.FileAPI;
+import com.pandev.utils.MessageAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.controller.ResponseHandler;
 import com.pandev.utils.excelAPI.ExcelService;
@@ -66,7 +67,7 @@ public class CommCommand implements CommService {
             return obj.applyMethod(message, this);
 
         } catch (Exception e) {
-            return getResponseHandl().initMessage(dtoParser.chatId(),"внутренняя ошибка.");
+            return MessageAPI.initMessage(dtoParser.chatId(),"внутренняя ошибка.");
         }
     }
 

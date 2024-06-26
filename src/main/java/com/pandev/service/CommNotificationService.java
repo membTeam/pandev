@@ -10,8 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public class CommNotificationService {
     private final NotificationFactory notificationFactory;
 
-    public SendMessage responseToMessage(Message message) {
-        return notificationFactory.execute(message);
+    public void responseToMessage(Message message) {
+        notificationFactory.execute(message);
     }
 
 }

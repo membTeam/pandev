@@ -1,5 +1,6 @@
 package com.pandev.controller;
 
+import com.pandev.utils.MessageAPI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.bot.AbilityBot;
@@ -73,7 +74,7 @@ public class TelegramBot extends AbilityBot {
             excelService.saveDataByExcelToDb(lsData);
 
             sender.execute(
-                    responseHandl.initMessage(chatId,
+                    MessageAPI.initMessage(chatId,
                             "Выполнена загрузка данных из файла"));
         } catch (Exception ex) { }
     }
