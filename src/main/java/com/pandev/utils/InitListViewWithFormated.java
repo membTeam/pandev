@@ -1,6 +1,7 @@
 package com.pandev.utils;
 
 import com.pandev.repositories.GroupsRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Форматированная строка дерева групп
@@ -24,6 +25,7 @@ public class InitListViewWithFormated {
      * @param repo
      * @return
      */
+    @Transactional(readOnly=true)
     public static String initViewFormated(GroupsRepository repo) {
         var sb = new StringBuffer();
 

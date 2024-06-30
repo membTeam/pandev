@@ -1,10 +1,15 @@
 package com.pandev.repositoryTest;
 
-
+import java.util.List;
 import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.excelAPI.ExcelService;
+import com.pandev.utils.excelAPI.RecordDTOexcel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,11 +19,59 @@ public class GroupsRepositoryTest {
     @Autowired
     private GroupsRepository groupsRepo;
 
+    @Autowired
+    private ExcelService excelService;
 
     @Test
     public void findAllGroups() {
         var res = groupsRepo.findAllGroupsToDownload();
         assertTrue(res.size()>0);
+    }
+
+
+    @Test
+    public void saveDataByExcelToDb() {
+        List<RecordDTOexcel> ls = List.of(
+                RecordDTOexcel.init("javascript javascript"),
+                RecordDTOexcel.init("javascript webdeveloper"),
+                RecordDTOexcel.init("webdeveloper тестировщики"),
+                RecordDTOexcel.init("webdeveloper программисты"),
+                RecordDTOexcel.init("java java"),
+                RecordDTOexcel.init("java джуниор"),
+                RecordDTOexcel.init("java мидл"),
+                RecordDTOexcel.init("java управленцы"),
+                RecordDTOexcel.init("управленцы senior"),
+                RecordDTOexcel.init("управленцы architect"),
+                RecordDTOexcel.init("architect python"));
+
+        var resSave = excelService.saveDataByExcelToDb(ls);
+
+        assertTrue(resSave.res());
+
+    }
+
+    @Test
+    public void findByTxtgroupIn() {
+
+        List<RecordDTOexcel> ls = List.of(
+                RecordDTOexcel.init("javascript javascript"),
+                RecordDTOexcel.init("javascript webdeveloper"),
+                RecordDTOexcel.init("webdeveloper тестировщики"),
+                RecordDTOexcel.init("webdeveloper программисты"),
+                RecordDTOexcel.init("java java"),
+                RecordDTOexcel.init("java джуниор"),
+                RecordDTOexcel.init("java мидл"),
+                RecordDTOexcel.init("java управленцы"),
+                RecordDTOexcel.init("управленцы senior"),
+                RecordDTOexcel.init("управленцы architect"),
+                RecordDTOexcel.init("architect python"));
+
+        List<String> lsSet = ls.stream().map(item-> item.parentNode())
+                .collect(Collectors.toSet()).stream().toList();
+        var resRepo = groupsRepo.findByTxtgroupIn(lsSet);
+
+        assertTrue(resRepo.size()>0);
+
     }
 
     @Test
