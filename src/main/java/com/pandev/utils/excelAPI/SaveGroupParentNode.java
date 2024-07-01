@@ -11,11 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Log4j
 public class SaveGroupParentNode {
 
     private  final GroupsRepository groupsRepo;
-
+    private final GetGroupsNode getGroupsNode;
 
     /**
      * Запись в поле txtgroup в строчных символах,
@@ -23,45 +22,36 @@ public class SaveGroupParentNode {
      * @param
      * @return
      */
-    @Transactional(propagation = Propagation.NESTED)
+    @Transactional
     public DTOresult saveGroupParentFromExcel(String strRootnode) {
 
         strRootnode = strRootnode.trim().toLowerCase();
 
-        try {
-
-            /**
-             * Если есть такой узел в БД -> return groupsFromRepo
-             */
-            var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode);
-            if (groupsFromRepo != null) {
-                throw new RuntimeException("Повторный ввод rootNode:" + strRootnode);
-            }
-
-            Groups groups = Groups.builder()
-                    .rootnode(-1)
-                    .parentnode(-1)
-                    .ordernum(0)
-                    .levelnum(0)
-                    .txtgroup(strRootnode)
-                    .build();
-
-
-            var resSave = groupsRepo.save(groups);
-
-            resSave.setParentnode(resSave.getId());
-            resSave.setRootnode(resSave.getId());
-
-            var finalSaved = groupsRepo.save(resSave);
-
-            return DTOresult.success(finalSaved);
-
-        } catch (RuntimeException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            log.error("saveGroupParentFromExcel: " + strRootnode);
-            throw ex;
+        /**
+         * Если есть такой узел в БД -> return groupsFromRepo
+         */
+        var groupsFromRepo = getGroupsNode.getGroups(strRootnode);
+        if (groupsFromRepo != null) {
+            return DTOresult.success(groupsFromRepo);
         }
+
+        Groups groups = Groups.builder()
+                .rootnode(-1)
+                .parentnode(-1)
+                .ordernum(0)
+                .levelnum(0)
+                .txtgroup(strRootnode)
+                .build();
+
+
+        var resSave = groupsRepo.save(groups);
+
+        resSave.setParentnode(resSave.getId());
+        resSave.setRootnode(resSave.getId());
+
+        var finalSaved = groupsRepo.save(resSave);
+
+        return DTOresult.success(finalSaved);
 
     }
 }

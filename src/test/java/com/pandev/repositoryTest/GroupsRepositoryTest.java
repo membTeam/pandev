@@ -1,6 +1,5 @@
 package com.pandev.repositoryTest;
 
-import java.util.List;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.excelAPI.ExcelService;
 import com.pandev.utils.excelAPI.RecordDTOexcel;
@@ -8,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,28 +21,25 @@ public class GroupsRepositoryTest {
     @Autowired
     private ExcelService excelService;
 
-    @Test
-    public void findAllGroups() {
-        var res = groupsRepo.findAllGroupsToDownload();
-        assertTrue(res.size()>0);
-    }
-
 
     @Test
     public void saveDataByExcelToDb_withError() {
         List<RecordDTOexcel> ls = List.of(
-                RecordDTOexcel.init("js js"),
-                RecordDTOexcel.init("js webdeveloper"),
-                RecordDTOexcel.init("webdeveloper тестировщики"),
-//                RecordDTOexcel.init("js тестировщики"),
-                RecordDTOexcel.init("javascript javascript"),
-                RecordDTOexcel.init("javascript webdeveloper")
-                );
+                RecordDTOexcel.init("js javasrc"),
+                RecordDTOexcel.init("javasrc parameters"),
+                RecordDTOexcel.init("javasrc func"),
+                RecordDTOexcel.init("js func")
+        );
 
         var resSave = excelService.saveDataByExcelToDb(ls);
-
         assertFalse(resSave.res());
 
+    }
+
+    @Test
+    public void findAllGroups() {
+        var res = groupsRepo.findAllGroupsToDownload();
+        assertTrue(res.size()>0);
     }
 
 
@@ -67,7 +63,6 @@ public class GroupsRepositoryTest {
         assertTrue(resSave.res());
 
     }
-
 
     @Test
     public void findByTxtgroupIn() {

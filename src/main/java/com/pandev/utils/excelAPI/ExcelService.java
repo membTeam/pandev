@@ -1,12 +1,17 @@
 package com.pandev.utils.excelAPI;
 
 
+import com.pandev.entities.Groups;
+import com.pandev.repositories.DTOgroups;
+import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOresult;
+import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,22 +19,15 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.pandev.entities.Groups;
-import com.pandev.repositories.DTOgroups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-
+@Log4j
 @Service
 public class ExcelService {
 
-    private static final Logger log = LoggerFactory.getLogger(ExcelService.class);
     private final String PATH_DIR_EXTENAL;
     private final String FILE_EXCEL_TEMPLATE;
     private final String FILE_EXCEL_DOWNLOAD;
@@ -38,13 +36,12 @@ public class ExcelService {
 
     private final SaveGroupParentNode saveParentNode;
     private final SaveGroupsSubNode saveSubNode;
-
-
+    private final GetGroupsNode getGroupsNode;
 
     public ExcelService(@Value("${path-external-resource}") String dirExtenal,
                         @Value("${file-excel-template}") String excelTemplate,
                         @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode) {
+                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode, GetGroupsNode getGroupsNode) {
 
         FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;
@@ -53,6 +50,7 @@ public class ExcelService {
         this.groupsRepo = groupsRepo;
         this.saveParentNode = saveGroupParentFromExcel;
         this.saveSubNode = saveGroupsSubNode;
+        this.getGroupsNode = getGroupsNode;
     }
 
     /**
@@ -206,7 +204,6 @@ public class ExcelService {
                     .txtgroup(strRootnode)
                     .build();
 
-
             var resSave = groupsRepo.save(groups);
 
             resSave.setParentnode(resSave.getId());
@@ -219,7 +216,6 @@ public class ExcelService {
         } catch (Exception ex) {
             log.error("Повторный ввод rootNode: " + strRootnode);
             throw ex;
-            //return DTOresult.err(ex.getMessage());
         }
 
     }
@@ -280,6 +276,19 @@ public class ExcelService {
         }
     }
 
+    private Groups initGroups(String txtSubNode, Groups groups) {
+
+        Groups subGroups = Groups.builder()
+                .rootnode(groups.getRootnode())
+                .parentnode(groups.getId())
+                .levelnum(groups.getLevelnum() + 1)
+                .ordernum(0)    // назначается в saveSubNodeFromExcel
+                .txtgroup(txtSubNode.trim().toLowerCase())
+                .build();
+
+        return  subGroups;
+    }
+
     /**
      * Обработка делается в последовательности:
      * если нет родительского элемента -> создается в saveGroupParentFromExcel.
@@ -289,55 +298,45 @@ public class ExcelService {
      * @param lsRecordDTOExcel создается из readFromExcel
      * @return
      */
-    @Transactional
+    @Transactional(noRollbackFor = RuntimeException.class)
     public DTOresult saveDataByExcelToDb(List<RecordDTOexcel> lsRecordDTOExcel) {
 
-        Map<String, Groups> mapParentNode = new HashMap<>();
-        Map<String, Groups> mapSubNode = new HashMap<>();
+        DTOresult dtoResult = null;
+        int index = 0;
+
         try {
 
-            initMapParentNode(mapParentNode, lsRecordDTOExcel, true);
-            initMapParentNode(mapSubNode, lsRecordDTOExcel, false);
+            for (var item : lsRecordDTOExcel) {
+                var txtParentNode = item.parentNode();
+                var txtSubNode = item.groupNode().trim().toLowerCase();
 
-            for(var item: lsRecordDTOExcel) {
-
-                Groups parentNode = mapParentNode.get(item.parentNode().trim().toLowerCase());
-                if (parentNode == null) {
-                    var resGroup = saveParentNode.saveGroupParentFromExcel(item.parentNode());
- /*                   if (!resGroup.res()) {
-                        throw new RuntimeException(resGroup.value().toString());
-                    }*/
-
-                    parentNode = (Groups) resGroup.value();
-                    mapParentNode.put(parentNode.getTxtgroup().trim().toLowerCase(), parentNode );
+                if (getGroupsNode.isExistsGroupNode(txtSubNode)) {
+                    continue;
                 }
 
-                var txtGroup = item.groupNode().trim().toLowerCase();
-                if (!mapSubNode.containsKey(txtGroup)) {
-                    Groups subGroups = Groups.builder()
-                            .rootnode(parentNode.getRootnode())
-                            .parentnode(parentNode.getId())
-                            .levelnum(parentNode.getLevelnum()+1)
-                            .ordernum(0)    // назначается в saveSubNodeFromExcel
-                            .txtgroup(txtGroup)
-                            .build();
+                var parentNode = (Groups) saveParentNode.saveGroupParentFromExcel(txtParentNode).value();
 
-                    saveSubNode.saveGroupsSubNode(subGroups);
-                    //saveSubNodeFromExcel(subGroups);
-
-                    /*if (!resSaveSubNode.res()) {
-                        throw new RuntimeException(resSaveSubNode.value().toString());
-                    }*/
+                if (parentNode.getTxtgroup().trim().toLowerCase().equals(txtSubNode)) {
+                    continue;
                 }
 
+                Groups subGroups = initGroups(txtSubNode, parentNode);
+
+                saveSubNode.saveGroupsSubNode(subGroups);
+
+                if (++index > 1) {
+                    throw new RuntimeException();
+                }
             }
 
-            return new DTOresult(true, "Данные из файла загружены в БД", null);
+            dtoResult = new DTOresult(true, "Данные из файла загружены в БД", null);
 
         } catch (Exception ex) {
-            return DTOresult.err(ex.getMessage());
+            log.error("saveDataByExcelToDb: " + ex.getMessage());
+            dtoResult = DTOresult.err("Не известная ошибка записи в БД из Excel");
         }
 
+        return dtoResult;
     }
 
 }

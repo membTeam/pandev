@@ -55,7 +55,7 @@ public class LoadData implements CommandLineRunner {
 
         var resSave = excelService.saveDataByExcelToDb(lsDTOexcel);
         if (!resSave.res()) {
-            log.error("LoadData: " + resSave.value().toString());
+            log.error("LoadData: " + resSave.mes());
         } else {
             log.info("Выполнена начальная загрузка данных в БД");
         }
