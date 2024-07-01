@@ -1,12 +1,6 @@
 package com.pandev.service;
 
-
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.controller.MessageAPI;
-import com.pandev.service.motification.NotificationService;
-import com.pandev.service.motification.NotificationType;
-import jakarta.transaction.Transactional;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +10,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
+
+import com.pandev.repositories.GroupsRepository;
+import com.pandev.controller.MessageAPI;
+import com.pandev.service.motification.NotificationService;
+import com.pandev.service.motification.NotificationType;
 
 import com.pandev.entities.Groups;
 import com.pandev.utils.DTOparser;
@@ -77,8 +76,8 @@ public class RemoveElement implements NotificationService {
         return mapResult.values().stream().toList();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
@@ -96,7 +95,7 @@ public class RemoveElement implements NotificationService {
         try {
             var currElement = groupsRepo.findByTxtgroup(strGroups);
             if (currElement == null) {
-                throw new IllegalArgumentException("Элемент не найден:" + strGroups);
+                throw new RuntimeException("Элемент не найден:" + strGroups);
             }
 
             if (currElement.getOrdernum() == 0) {
@@ -105,6 +104,7 @@ public class RemoveElement implements NotificationService {
 
                 result.setText("Выполнено ПОЛНОЕ удаление всех элементов корневого узла");
                 messageAPI.sendMessage(result);
+                return;
             }
 
             var groupsForDelete = dataPreparation(currElement);

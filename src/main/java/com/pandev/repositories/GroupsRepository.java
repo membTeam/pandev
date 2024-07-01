@@ -29,6 +29,8 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
 
     Groups findByTxtgroup(String txtgroup );
 
+    List<Groups> findByTxtgroupIn(List<String> ls);
+
     /**
      * Используется для модульных тестов
      * @return

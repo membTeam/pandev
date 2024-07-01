@@ -12,9 +12,17 @@ public class NotificationType {
     public static final String VIEW_TREE = "viewTree";
 
     public static String getType(Message message) {
-        var strMessage = message.getText().substring(1);
+        var strMessage = message.getText().substring(1).trim();
 
-        return switch (message.getText().substring(1).trim().toUpperCase()) {
+        var index = strMessage.indexOf(" ");
+        String strCommand;
+        if (index < 0) {
+            strCommand = strMessage;
+        } else {
+            strCommand = strMessage.substring(0, index);
+        }
+
+        return switch (strCommand.trim().toUpperCase()) {
             case "ADDELEMENT" -> ADD_ELEMENT;
             case "REMOVEELEMENT" -> REMOVE_ELEMENT;
             case "VIEWTREE" -> VIEW_TREE;

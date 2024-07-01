@@ -1,11 +1,17 @@
 package com.pandev.utils.excelAPI;
 
 
-import jakarta.transaction.Transactional;
+import com.pandev.entities.Groups;
+import com.pandev.repositories.DTOgroups;
+import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOresult;
+import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,18 +19,12 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.pandev.entities.Groups;
-import com.pandev.repositories.DTOgroups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
-
-
+@Log4j
 @Service
 public class ExcelService {
 
@@ -34,22 +34,30 @@ public class ExcelService {
 
     private final GroupsRepository groupsRepo;
 
+    private final SaveGroupParentNode saveParentNode;
+    private final SaveGroupsSubNode saveSubNode;
+    private final GetGroupsNode getGroupsNode;
+
     public ExcelService(@Value("${path-external-resource}") String dirExtenal,
                         @Value("${file-excel-template}") String excelTemplate,
                         @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo) {
+                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode, GetGroupsNode getGroupsNode) {
 
         FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;
         FILE_EXCEL_DOWNLOAD = fileexcelDownload;
 
         this.groupsRepo = groupsRepo;
+        this.saveParentNode = saveGroupParentFromExcel;
+        this.saveSubNode = saveGroupsSubNode;
+        this.getGroupsNode = getGroupsNode;
     }
 
     /**
      * Выгрузка данных в файл Excel
      * @return
      */
+    @Transactional(readOnly = true)
     public DTOresult downloadGroupsToExcel() {
 
         var objCells = new Object(){
@@ -75,11 +83,13 @@ public class ExcelService {
         };
 
         Path path = Paths.get(FILE_EXCEL_TEMPLATE);
+
         try {
             List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroupsToDownload();
             if (lsDTOgroups.size() == 0) {
-                throw new IllegalArgumentException("mes:В БД нет данных для выгрузки в Excel");
+                throw new RuntimeException("mes:В БД нет данных для выгрузки в Excel");
             }
+
             FileInputStream file = new FileInputStream(new File(path.toString()));
 
             Workbook workbook = new XSSFWorkbook(file);
@@ -114,10 +124,11 @@ public class ExcelService {
             workbook.write(outputStream);
             workbook.close();
 
-            return new DTOresult(true, pathDownload);
+            return DTOresult.success(pathDownload);
 
         } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
+            log.error("downloadGroupsToExcel: " + ex.getMessage());
+            return DTOresult.err(ex.getMessage());
         }
 
     }
@@ -170,7 +181,7 @@ public class ExcelService {
      * @param
      * @return
      */
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public DTOresult saveGroupParentFromExcel(String strRootnode) {
 
         strRootnode = strRootnode.trim().toLowerCase();
@@ -182,7 +193,7 @@ public class ExcelService {
              */
             var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode);
             if (groupsFromRepo != null) {
-                return new DTOresult(true, groupsFromRepo);
+                throw new RuntimeException("Повторный ввод rootNode:" + strRootnode);
             }
 
             Groups groups = Groups.builder()
@@ -193,7 +204,6 @@ public class ExcelService {
                     .txtgroup(strRootnode)
                     .build();
 
-
             var resSave = groupsRepo.save(groups);
 
             resSave.setParentnode(resSave.getId());
@@ -201,10 +211,11 @@ public class ExcelService {
 
             var afterSave = groupsRepo.save(resSave);
 
-            return new DTOresult(true, afterSave);
+            return DTOresult.success(afterSave);
 
         } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
+            log.error("Повторный ввод rootNode: " + strRootnode);
+            throw ex;
         }
 
     }
@@ -222,22 +233,60 @@ public class ExcelService {
         try {
             // Исключается дублирование txtgroup and parentNode
             if (groupsRepo.isExistsBytxtgroupAndParentnode(subNode.getTxtgroup(), subNode.getParentnode())) {
-                return new DTOresult(true, "Повторный ввод субЭлемента");
+                return new DTOresult(true, "exists", null);
             }
 
-            // Позиция встраиваемого элемента в общей структуре дерева
-            // относительно корневого элемента
+            /**
+             * Позиция встраиваемого элемента в общей структуре дерева
+             * относительно корневого элемента
+             */
             int subMaxOrderNum = groupsRepo.maxOrdernum(subNode.getRootnode(), subNode.getParentnode());
-            subNode.setOrdernum(subMaxOrderNum+1);
+            subNode.setOrdernum(++subMaxOrderNum);
 
             groupsRepo.save(subNode);
 
-            return new DTOresult(true, subNode);
+            return DTOresult.success(subNode);
 
         } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
+            return DTOresult.err(ex.getMessage());
         }
 
+    }
+
+    /**
+     * Предварительная загрузка из БД
+     * @param map
+     * @param lsRecordDTOExcel
+     * @param isParentNode
+     */
+    @Transactional(readOnly = true)
+    public void initMapParentNode(Map<String, Groups> map, List<RecordDTOexcel> lsRecordDTOExcel, boolean isParentNode) {
+        List<String> lsSet;
+        if (isParentNode) {
+            lsSet = lsRecordDTOExcel.stream().map(item -> item.parentNode().trim().toLowerCase() )
+                    .collect(Collectors.toSet()).stream().toList();
+        } else {
+            lsSet = lsRecordDTOExcel.stream().map(item -> item.groupNode().trim().toLowerCase())
+                    .collect(Collectors.toSet()).stream().toList();
+        }
+
+        var resRepo = groupsRepo.findByTxtgroupIn(lsSet);
+        if (resRepo.size() > 0) {
+            resRepo.forEach(item-> map.put(item.getTxtgroup().trim().toLowerCase(), item) );
+        }
+    }
+
+    private Groups initGroups(String txtSubNode, Groups groups) {
+
+        Groups subGroups = Groups.builder()
+                .rootnode(groups.getRootnode())
+                .parentnode(groups.getId())
+                .levelnum(groups.getLevelnum() + 1)
+                .ordernum(0)    // назначается в saveSubNodeFromExcel
+                .txtgroup(txtSubNode.trim().toLowerCase())
+                .build();
+
+        return  subGroups;
     }
 
     /**
@@ -249,45 +298,45 @@ public class ExcelService {
      * @param lsRecordDTOExcel создается из readFromExcel
      * @return
      */
-    @Transactional
+    @Transactional(noRollbackFor = RuntimeException.class)
     public DTOresult saveDataByExcelToDb(List<RecordDTOexcel> lsRecordDTOExcel) {
 
-         Map<String, Groups> mapParentNode = new HashMap<>();
+        DTOresult dtoResult = null;
+        int index = 0;
+
         try {
-            for(var item: lsRecordDTOExcel) {
 
-                Groups parentNode = mapParentNode.get(item.parentNode().trim().toLowerCase());
-                if (parentNode == null) {
-                    var resGroup = saveGroupParentFromExcel(item.parentNode());
-                    if (!resGroup.res()) {
-                        throw new IllegalArgumentException(resGroup.value().toString());
-                    }
+            for (var item : lsRecordDTOExcel) {
+                var txtParentNode = item.parentNode();
+                var txtSubNode = item.groupNode().trim().toLowerCase();
 
-                    parentNode = (Groups) resGroup.value();
-                    mapParentNode.put(parentNode.getTxtgroup(), parentNode );
+                if (getGroupsNode.isExistsGroupNode(txtSubNode)) {
+                    continue;
                 }
 
-                Groups subGroups = Groups.builder()
-                        .rootnode(parentNode.getRootnode())
-                        .parentnode(parentNode.getId())
-                        .levelnum(parentNode.getLevelnum()+1)
-                        .ordernum(0)    // назначается в saveSubNodeFromExcel
-                        .txtgroup(item.groupNode().trim().toLowerCase())
-                        .build();
+                var parentNode = (Groups) saveParentNode.saveGroupParentFromExcel(txtParentNode).value();
 
-                var resSaveSubNode = saveSubNodeFromExcel(subGroups);
+                if (parentNode.getTxtgroup().trim().toLowerCase().equals(txtSubNode)) {
+                    continue;
+                }
 
-                if (!resSaveSubNode.res()) {
-                    throw new IllegalArgumentException(resSaveSubNode.value().toString());
+                Groups subGroups = initGroups(txtSubNode, parentNode);
+
+                saveSubNode.saveGroupsSubNode(subGroups);
+
+                if (++index > 1) {
+                    throw new RuntimeException();
                 }
             }
 
-            return new DTOresult(true, "Данные из файла загружены в БД");
+            dtoResult = new DTOresult(true, "Данные из файла загружены в БД", null);
 
         } catch (Exception ex) {
-            return new DTOresult(false, ex.getMessage());
+            log.error("saveDataByExcelToDb: " + ex.getMessage());
+            dtoResult = DTOresult.err("Не известная ошибка записи в БД из Excel");
         }
 
+        return dtoResult;
     }
 
 }
