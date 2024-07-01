@@ -30,6 +30,24 @@ public class GroupsRepositoryTest {
 
 
     @Test
+    public void saveDataByExcelToDb_withError() {
+        List<RecordDTOexcel> ls = List.of(
+                RecordDTOexcel.init("js js"),
+                RecordDTOexcel.init("js webdeveloper"),
+                RecordDTOexcel.init("webdeveloper тестировщики"),
+//                RecordDTOexcel.init("js тестировщики"),
+                RecordDTOexcel.init("javascript javascript"),
+                RecordDTOexcel.init("javascript webdeveloper")
+                );
+
+        var resSave = excelService.saveDataByExcelToDb(ls);
+
+        assertFalse(resSave.res());
+
+    }
+
+
+    @Test
     public void saveDataByExcelToDb() {
         List<RecordDTOexcel> ls = List.of(
                 RecordDTOexcel.init("javascript javascript"),
@@ -49,6 +67,7 @@ public class GroupsRepositoryTest {
         assertTrue(resSave.res());
 
     }
+
 
     @Test
     public void findByTxtgroupIn() {

@@ -15,17 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.pandev.entities.Groups;
 import com.pandev.repositories.DTOgroups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOresult;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -39,16 +36,23 @@ public class ExcelService {
 
     private final GroupsRepository groupsRepo;
 
+    private final SaveGroupParentNode saveParentNode;
+    private final SaveGroupsSubNode saveSubNode;
+
+
+
     public ExcelService(@Value("${path-external-resource}") String dirExtenal,
                         @Value("${file-excel-template}") String excelTemplate,
                         @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo) {
+                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode) {
 
         FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;
         FILE_EXCEL_DOWNLOAD = fileexcelDownload;
 
         this.groupsRepo = groupsRepo;
+        this.saveParentNode = saveGroupParentFromExcel;
+        this.saveSubNode = saveGroupsSubNode;
     }
 
     /**
@@ -179,7 +183,7 @@ public class ExcelService {
      * @param
      * @return
      */
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public DTOresult saveGroupParentFromExcel(String strRootnode) {
 
         strRootnode = strRootnode.trim().toLowerCase();
@@ -191,7 +195,7 @@ public class ExcelService {
              */
             var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode);
             if (groupsFromRepo != null) {
-                return DTOresult.success(groupsFromRepo);
+                throw new RuntimeException("Повторный ввод rootNode:" + strRootnode);
             }
 
             Groups groups = Groups.builder()
@@ -213,7 +217,9 @@ public class ExcelService {
             return DTOresult.success(afterSave);
 
         } catch (Exception ex) {
-            return DTOresult.err(ex.getMessage());
+            log.error("Повторный ввод rootNode: " + strRootnode);
+            throw ex;
+            //return DTOresult.err(ex.getMessage());
         }
 
     }
@@ -297,10 +303,10 @@ public class ExcelService {
 
                 Groups parentNode = mapParentNode.get(item.parentNode().trim().toLowerCase());
                 if (parentNode == null) {
-                    var resGroup = saveGroupParentFromExcel(item.parentNode());
-                    if (!resGroup.res()) {
+                    var resGroup = saveParentNode.saveGroupParentFromExcel(item.parentNode());
+ /*                   if (!resGroup.res()) {
                         throw new RuntimeException(resGroup.value().toString());
-                    }
+                    }*/
 
                     parentNode = (Groups) resGroup.value();
                     mapParentNode.put(parentNode.getTxtgroup().trim().toLowerCase(), parentNode );
@@ -316,11 +322,12 @@ public class ExcelService {
                             .txtgroup(txtGroup)
                             .build();
 
-                    var resSaveSubNode = saveSubNodeFromExcel(subGroups);
+                    saveSubNode.saveGroupsSubNode(subGroups);
+                    //saveSubNodeFromExcel(subGroups);
 
-                    if (!resSaveSubNode.res()) {
+                    /*if (!resSaveSubNode.res()) {
                         throw new RuntimeException(resSaveSubNode.value().toString());
-                    }
+                    }*/
                 }
 
             }
