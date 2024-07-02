@@ -4,6 +4,9 @@ import com.pandev.entities.Groups;
 
 import java.util.List;
 
+/**
+ * Преобразование List<Object> , полученный из репозиторичя
+ */
 public class InitListGroups {
 
     public static List<Groups> convListObjToListGroups(List<List<Object>> lsObject) {
