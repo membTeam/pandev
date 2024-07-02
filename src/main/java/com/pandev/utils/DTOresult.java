@@ -1,5 +1,11 @@
 package com.pandev.utils;
 
+/**
+ * Используется во всех методах, где требуется передача данных
+ * @param res
+ * @param mes
+ * @param value
+ */
 public record DTOresult(boolean res, String mes, Object value ) {
     public static DTOresult err(String mes) {
         return new DTOresult(false, mes, null);

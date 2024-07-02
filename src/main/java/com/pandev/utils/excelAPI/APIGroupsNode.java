@@ -8,9 +8,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class GetGroupsNode {
+public class APIGroupsNode {
 
     private final GroupsRepository groupsRepo;
+
+    public Groups initGroups(String txtSubNode, Groups groupsParent) {
+
+        Groups subGroups = Groups.builder()
+                .rootnode(groupsParent.getRootnode())
+                .parentnode(groupsParent.getId())
+                .levelnum(groupsParent.getLevelnum() + 1)
+                .ordernum(0)    // назначается в saveSubNodeFromExcel
+                .txtgroup(txtSubNode.trim().toLowerCase())
+                .build();
+
+        return  subGroups;
+    }
 
     @Transactional(readOnly = true)
     public boolean isExistsGroupNode(String txtGroups) {

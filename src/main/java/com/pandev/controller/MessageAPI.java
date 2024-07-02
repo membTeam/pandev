@@ -2,8 +2,11 @@ package com.pandev.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
+import org.telegram.abilitybots.api.sender.MessageSender;
+import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 @Service
@@ -11,10 +14,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 @Log4j
 public class MessageAPI {
 
-    private TelegramBot telegramBot;
+    private MessageSender sender;
 
-    public void init(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
+    public void init(MessageSender sender) {
+        this.sender = sender;
     }
 
     public static SendMessage initMessage(long chatId, String mes) {
@@ -24,12 +27,9 @@ public class MessageAPI {
                 .build();
     }
 
+    @SneakyThrows
     public void sendMessage(SendMessage sendMessage) {
-        try {
-            telegramBot.sender().execute(sendMessage);
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-        }
+            sender.execute(sendMessage);
     }
 
 }

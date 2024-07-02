@@ -1,20 +1,20 @@
 package com.pandev.utils.excelAPI;
 
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.utils.DTOresult;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class SaveGroupParentNode {
+public class ServiceParentNode {
 
     private  final GroupsRepository groupsRepo;
-    private final GetGroupsNode getGroupsNode;
+    private final APIGroupsNode getGroupsNode;
 
     /**
      * Запись в поле txtgroup в строчных символах,
@@ -23,7 +23,7 @@ public class SaveGroupParentNode {
      * @return
      */
     @Transactional
-    public DTOresult saveGroupParentFromExcel(String strRootnode) {
+    public DTOresult saveParentNode(String strRootnode) {
 
         strRootnode = strRootnode.trim().toLowerCase();
 
