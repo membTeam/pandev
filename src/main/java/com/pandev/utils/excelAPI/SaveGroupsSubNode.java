@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class SaveGroupsSubNode {
 
     private final GroupsRepository groupsRepo;
-    private final GetGroupsNode getGroupsNode;
+    private final APIGroupsNode getGroupsNode;
 
     @Transactional
-    public DTOresult saveGroupsSubNode(Groups subNode) {
+    public DTOresult saveSubNode(Groups subNode) {
         var subFromRepo = getGroupsNode.getGroups(subNode.getTxtgroup());
 
         if (subFromRepo != null) {
@@ -27,7 +27,7 @@ public class SaveGroupsSubNode {
          * относительно корневого элемента
          */
         int subMaxOrderNum = getGroupsNode.getMaxOrderNum(subNode);
-                //groupsRepo.maxOrdernum(subNode.getRootnode(), subNode.getParentnode());
+
         subNode.setOrdernum(++subMaxOrderNum);
 
         subFromRepo = groupsRepo.save(subNode);
@@ -35,6 +35,5 @@ public class SaveGroupsSubNode {
         return DTOresult.success(subFromRepo);
 
     }
-
 
 }

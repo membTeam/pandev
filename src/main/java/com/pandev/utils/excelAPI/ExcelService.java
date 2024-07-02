@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,12 +37,14 @@ public class ExcelService {
 
     private final SaveGroupParentNode saveParentNode;
     private final SaveGroupsSubNode saveSubNode;
-    private final GetGroupsNode getGroupsNode;
+    private final APIGroupsNode getGroupsNode;
+    private final APIGroupsNode apiGroupsNode;
+
 
     public ExcelService(@Value("${path-external-resource}") String dirExtenal,
                         @Value("${file-excel-template}") String excelTemplate,
                         @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode, GetGroupsNode getGroupsNode) {
+                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode, APIGroupsNode getGroupsNode, APIGroupsNode apiGroupsNode) {
 
         FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;
@@ -51,6 +54,7 @@ public class ExcelService {
         this.saveParentNode = saveGroupParentFromExcel;
         this.saveSubNode = saveGroupsSubNode;
         this.getGroupsNode = getGroupsNode;
+        this.apiGroupsNode = apiGroupsNode;
     }
 
     /**
@@ -276,7 +280,7 @@ public class ExcelService {
         }
     }
 
-    private Groups initGroups(String txtSubNode, Groups groups) {
+    /*private Groups initGroups(String txtSubNode, Groups groups) {
 
         Groups subGroups = Groups.builder()
                 .rootnode(groups.getRootnode())
@@ -287,7 +291,7 @@ public class ExcelService {
                 .build();
 
         return  subGroups;
-    }
+    }*/
 
     /**
      * Обработка делается в последовательности:
@@ -298,45 +302,35 @@ public class ExcelService {
      * @param lsRecordDTOExcel создается из readFromExcel
      * @return
      */
-    @Transactional(noRollbackFor = RuntimeException.class)
+    @Transactional
     public DTOresult saveDataByExcelToDb(List<RecordDTOexcel> lsRecordDTOExcel) {
+        Map<String, Groups> mapSubGroups = new HashMap<>();
+        initMapParentNode(mapSubGroups, lsRecordDTOExcel, false);
 
-        DTOresult dtoResult = null;
-        int index = 0;
+        for (var item : lsRecordDTOExcel) {
+            var txtParentNode = item.parentNode();
+            var txtSubNode = item.groupNode().trim().toLowerCase();
 
-        try {
-
-            for (var item : lsRecordDTOExcel) {
-                var txtParentNode = item.parentNode();
-                var txtSubNode = item.groupNode().trim().toLowerCase();
-
-                if (getGroupsNode.isExistsGroupNode(txtSubNode)) {
-                    continue;
-                }
-
-                var parentNode = (Groups) saveParentNode.saveGroupParentFromExcel(txtParentNode).value();
-
-                if (parentNode.getTxtgroup().trim().toLowerCase().equals(txtSubNode)) {
-                    continue;
-                }
-
-                Groups subGroups = initGroups(txtSubNode, parentNode);
-
-                saveSubNode.saveGroupsSubNode(subGroups);
-
-                if (++index > 1) {
-                    throw new RuntimeException();
-                }
+            if (mapSubGroups.containsKey(txtSubNode)) {
+                continue;
             }
 
-            dtoResult = new DTOresult(true, "Данные из файла загружены в БД", null);
+            var parentNode = (Groups) saveParentNode.saveParentNode(txtParentNode).value();
+            mapSubGroups.put(parentNode.getTxtgroup().trim().toLowerCase(), parentNode);
 
-        } catch (Exception ex) {
-            log.error("saveDataByExcelToDb: " + ex.getMessage());
-            dtoResult = DTOresult.err("Не известная ошибка записи в БД из Excel");
+            if (parentNode.getTxtgroup().trim().toLowerCase().equals(txtSubNode)) {
+                continue;
+            }
+
+            Groups subGroups = apiGroupsNode.initGroups(txtSubNode, parentNode);
+
+            var groupsSaved = (Groups) saveSubNode.saveSubNode(subGroups).value();
+            mapSubGroups.put(groupsSaved.getTxtgroup().trim().toLowerCase(), groupsSaved);
+
         }
 
-        return dtoResult;
+        return new DTOresult(true, "Данные из файла загружены в БД", null);
+
     }
 
 }

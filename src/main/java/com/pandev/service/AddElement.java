@@ -1,21 +1,22 @@
 package com.pandev.service;
 
+import com.pandev.controller.MessageAPI;
+import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.service.motification.NotificationService;
 import com.pandev.service.motification.NotificationType;
 import com.pandev.utils.DTOparser;
+import com.pandev.utils.DTOresult;
 import com.pandev.utils.InitListViewWithFormated;
-import com.pandev.controller.MessageAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.ExcelService;
-import com.pandev.utils.excelAPI.RecordDTOexcel;
+import com.pandev.utils.excelAPI.APIGroupsNode;
+import com.pandev.utils.excelAPI.SaveGroupParentNode;
+import com.pandev.utils.excelAPI.SaveGroupsSubNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.util.List;
 
 
 /**
@@ -28,8 +29,11 @@ import java.util.List;
 public class AddElement implements NotificationService {
 
     private final GroupsRepository groupRepo;
-    private final ExcelService excelService;
+    private final SaveGroupsSubNode saveGroupsSubNode;
+    private final SaveGroupParentNode saveGroupParentNode;
     private final MessageAPI messageAPI;
+    private final APIGroupsNode apiGroupsNode;
+
 
     /**
      * ДОбавление корневого элемента
@@ -40,28 +44,23 @@ public class AddElement implements NotificationService {
      */
     private SendMessage addRootElement(long chatId, String[] arr) {
 
-        var result = MessageAPI.initMessage(chatId, null);
-
-        var strGroup = arr[0].trim().toLowerCase();
+        var resultMes = MessageAPI.initMessage(chatId, null);
+        var strGroupParent = arr[0].trim().toLowerCase();
 
         try {
-            if (groupRepo.findByTxtgroup(strGroup) != null) {
-                throw new IllegalArgumentException("Повторный ввод элемента:" + arr[0]);
+            if (groupRepo.findByTxtgroup(strGroupParent) != null) {
+                resultMes.setText("Повторный ввод элемента");
+                return resultMes;
             }
 
-            var resSave = excelService.saveGroupParentFromExcel(strGroup);
-
-            if (!resSave.res()) {
-                throw new IllegalArgumentException(resSave.value().toString());
-            }
-
-            result.setText("Создан корневой элемент: " + arr[0]);
+            var resSaved = (Groups) saveGroupParentNode.saveParentNode(strGroupParent).value();
+            resultMes.setText("Создан корневой элемент: " + resSaved.getTxtgroup());
 
         } catch (Exception ex) {
-            result.setText("Неизвестная ошибка записи в БД");
+            resultMes.setText("Неизвестная ошибка записи в БД");
         }
 
-        return result;
+        return resultMes;
     }
 
     /**
@@ -72,11 +71,11 @@ public class AddElement implements NotificationService {
      * @return
      */
     private SendMessage addSubElement(long chatId, String[] arr) {
-
-        var result = MessageAPI.initMessage(chatId, null);
+        var resultMessage = MessageAPI.initMessage(chatId, null);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
+
             if (parentNode == null) {
                 var strFormatedGroups = InitListViewWithFormated.initViewFormated(groupRepo);
 
@@ -87,22 +86,35 @@ public class AddElement implements NotificationService {
                         strFormatedGroups);
             }
 
-            var strSubNode = arr[1];
+            var strSubNode = arr[1].trim().toLowerCase();
 
-            var valParam = new RecordDTOexcel(parentNode.getTxtgroup(), strSubNode);
-            var resSave = excelService.saveDataByExcelToDb(List.of(valParam));
+            var groups = apiGroupsNode.initGroups(strSubNode, parentNode);
+            var resSaved = (Groups) saveGroupsSubNode.saveSubNode(groups).value();
 
-            if (!resSave.res()) {
-                throw new IllegalArgumentException(resSave.value().toString());
-            }
-
-            result.setText("Добавлена дочерняя группа: " + strSubNode);
+            resultMessage.setText("Добавлена дочерняя группа: " + resSaved.getTxtgroup());
 
         } catch (Exception ex) {
-            result.setText("Не известная ошибка записи в БД");
+            resultMessage.setText("Не известная ошибка записи в БД");
         }
 
-        return result;
+        return resultMessage;
+    }
+
+
+    public DTOresult applyMethodTest(long chatId, String[] arrParams) {
+        SendMessage resultMes ;
+        try {
+            if (arrParams.length == 1) {
+                resultMes = addRootElement(chatId, arrParams);
+            } else {
+                resultMes = addSubElement(chatId, arrParams);
+            }
+
+            return new DTOresult(true, resultMes.getText(), null);
+        } catch (Exception ex) {
+            return DTOresult.err(ex.getMessage());
+        }
+
     }
 
     @Override
@@ -115,6 +127,8 @@ public class AddElement implements NotificationService {
                     "Формат команды должен включать:\n" +
                     "идентификатор команды и один или два аргумента\n"+
                     "Смотреть образец /help"));
+
+            return;
         }
 
         try {
