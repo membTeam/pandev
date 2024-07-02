@@ -33,7 +33,7 @@ public class GroupsRepositoryTest {
 
         try {
             var resSave = excelService.saveDataByExcelToDb(ls);
-            assertFalse(resSave.res());
+            assertTrue(resSave.res());
         } catch (Exception ex) {
             System.out.println("typeError:" + ex.getClass().getSimpleName());
         }

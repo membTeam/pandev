@@ -88,6 +88,11 @@ public class AddElement implements NotificationService {
 
             var strSubNode = arr[1].trim().toLowerCase();
 
+            if (groupRepo.findByTxtgroup(strSubNode) != null) {
+                resultMessage.setText("Повторный ввод элемента");
+                return resultMessage;
+            }
+
             var groups = apiGroupsNode.initGroups(strSubNode, parentNode);
             var resSaved = (Groups) saveGroupsSubNode.saveSubNode(groups).value();
 
