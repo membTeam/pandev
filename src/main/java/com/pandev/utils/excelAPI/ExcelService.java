@@ -1,10 +1,7 @@
 package com.pandev.utils.excelAPI;
 
 
-import com.pandev.entities.Groups;
-import com.pandev.repositories.DTOgroups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
+
 import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -25,18 +22,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.pandev.entities.Groups;
+import com.pandev.repositories.DTOgroups;
+import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOresult;
+
 @Log4j
 @Service
 public class ExcelService {
 
-    private final String PATH_DIR_EXTENAL;
-    private final String FILE_EXCEL_TEMPLATE;
-    private final String FILE_EXCEL_DOWNLOAD;
+    private  String PATH_DIR_EXTENAL;
+    private  String FILE_EXCEL_TEMPLATE;
+    private  String FILE_EXCEL_DOWNLOAD;
 
     private final GroupsRepository groupsRepo;
 
-    private final SaveGroupParentNode saveParentNode;
-    private final SaveGroupsSubNode saveSubNode;
+    private final ServiceParentNode saveParentNode;
+    private final ServiceSubNode saveSubNode;
     private final APIGroupsNode getGroupsNode;
     private final APIGroupsNode apiGroupsNode;
 
@@ -44,7 +46,7 @@ public class ExcelService {
     public ExcelService(@Value("${path-external-resource}") String dirExtenal,
                         @Value("${file-excel-template}") String excelTemplate,
                         @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo, SaveGroupParentNode saveGroupParentFromExcel, SaveGroupsSubNode saveGroupsSubNode, APIGroupsNode getGroupsNode, APIGroupsNode apiGroupsNode) {
+                        GroupsRepository groupsRepo, ServiceParentNode saveGroupParentFromExcel, ServiceSubNode saveGroupsSubNode, APIGroupsNode getGroupsNode, APIGroupsNode apiGroupsNode) {
 
         FILE_EXCEL_TEMPLATE = excelTemplate;
         PATH_DIR_EXTENAL = dirExtenal;

@@ -10,8 +10,8 @@ import com.pandev.utils.DTOresult;
 import com.pandev.utils.InitListViewWithFormated;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.APIGroupsNode;
-import com.pandev.utils.excelAPI.SaveGroupParentNode;
-import com.pandev.utils.excelAPI.SaveGroupsSubNode;
+import com.pandev.utils.excelAPI.ServiceParentNode;
+import com.pandev.utils.excelAPI.ServiceSubNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public class AddElement implements NotificationService {
 
     private final GroupsRepository groupRepo;
-    private final SaveGroupsSubNode saveGroupsSubNode;
-    private final SaveGroupParentNode saveGroupParentNode;
+    private final ServiceSubNode saveGroupsSubNode;
+    private final ServiceParentNode saveGroupParentNode;
     private final MessageAPI messageAPI;
     private final APIGroupsNode apiGroupsNode;
 

@@ -1,15 +1,17 @@
 package com.pandev.utils.excelAPI;
 
-import com.pandev.entities.Groups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pandev.entities.Groups;
+import com.pandev.repositories.GroupsRepository;
+import com.pandev.utils.DTOresult;
+
 @Service
 @RequiredArgsConstructor
-public class SaveGroupsSubNode {
+public class ServiceSubNode {
 
     private final GroupsRepository groupsRepo;
     private final APIGroupsNode getGroupsNode;

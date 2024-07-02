@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class SaveGroupParentNode {
+public class ServiceParentNode {
 
     private  final GroupsRepository groupsRepo;
     private final APIGroupsNode getGroupsNode;
