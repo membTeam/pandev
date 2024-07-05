@@ -180,85 +180,6 @@ public class ExcelService {
         }
     }
 
-
-    /**
-     * Запись в поле txtgroup в строчных символах,
-     * а при отображении в telegramBoт д/быть преобразование первого символа в прописной
-     * @param
-     * @return
-     */
-    @Transactional(propagation = Propagation.NESTED)
-    public DTOresult saveGroupParentFromExcel(String strRootnode) {
-
-        strRootnode = strRootnode.trim().toLowerCase();
-
-        try {
-
-            /**
-             * Если есть такой узел в БД -> return groupsFromRepo
-             */
-            var groupsFromRepo = groupsRepo.findByTxtgroup(strRootnode);
-            if (groupsFromRepo != null) {
-                throw new RuntimeException("Повторный ввод rootNode:" + strRootnode);
-            }
-
-            Groups groups = Groups.builder()
-                    .rootnode(-1)
-                    .parentnode(-1)
-                    .ordernum(0)
-                    .levelnum(0)
-                    .txtgroup(strRootnode)
-                    .build();
-
-            var resSave = groupsRepo.save(groups);
-
-            resSave.setParentnode(resSave.getId());
-            resSave.setRootnode(resSave.getId());
-
-            var afterSave = groupsRepo.save(resSave);
-
-            return DTOresult.success(afterSave);
-
-        } catch (Exception ex) {
-            log.error("Повторный ввод rootNode: " + strRootnode);
-            throw ex;
-        }
-
-    }
-
-
-    /**
-     * Сохранение дочернего узла и изменение поля ordernum (индекс очередности в контексте rootnode)
-     * у всех последующих записей после вставляемой
-     * @param subNode
-     * @return
-     */
-    @Transactional
-    private DTOresult saveSubNodeFromExcel(Groups subNode) {
-
-        try {
-            // Исключается дублирование txtgroup and parentNode
-            if (groupsRepo.isExistsBytxtgroupAndParentnode(subNode.getTxtgroup(), subNode.getParentnode())) {
-                return new DTOresult(true, "exists", null);
-            }
-
-            /**
-             * Позиция встраиваемого элемента в общей структуре дерева
-             * относительно корневого элемента
-             */
-            int subMaxOrderNum = groupsRepo.maxOrdernum(subNode.getRootnode(), subNode.getParentnode());
-            subNode.setOrdernum(++subMaxOrderNum);
-
-            groupsRepo.save(subNode);
-
-            return DTOresult.success(subNode);
-
-        } catch (Exception ex) {
-            return DTOresult.err(ex.getMessage());
-        }
-
-    }
-
     /**
      * Предварительная загрузка из БД
      * @param map
@@ -281,19 +202,6 @@ public class ExcelService {
             resRepo.forEach(item-> map.put(item.getTxtgroup().trim().toLowerCase(), item) );
         }
     }
-
-    /*private Groups initGroups(String txtSubNode, Groups groups) {
-
-        Groups subGroups = Groups.builder()
-                .rootnode(groups.getRootnode())
-                .parentnode(groups.getId())
-                .levelnum(groups.getLevelnum() + 1)
-                .ordernum(0)    // назначается в saveSubNodeFromExcel
-                .txtgroup(txtSubNode.trim().toLowerCase())
-                .build();
-
-        return  subGroups;
-    }*/
 
     /**
      * Обработка делается в последовательности:

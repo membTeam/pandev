@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.nio.file.Path;
 
 import static com.pandev.utils.Constants.*;
-import com.pandev.service.motification.CommNotificationService;
+import com.pandev.service.strategyTempl.FactoryService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.ExcelService;
@@ -23,14 +23,14 @@ public class ResponseHandler {
     private SilentSender sender;
     private final ExcelService excelService;
     private TelegramBot telegramBot;
-    private final CommNotificationService commNotificationService;
+    private final FactoryService commBeanService;
 
     public ResponseHandler(FileAPI fileAPI,
-                           ExcelService excelService, CommNotificationService commNotificationService) {
+                           ExcelService excelService, FactoryService commBeanService) {
         this.fileAPI = fileAPI;
 
         this.excelService = excelService;
-        this.commNotificationService = commNotificationService;
+        this.commBeanService = commBeanService;
     }
 
     public void init(TelegramBot telegramBot) {
@@ -79,7 +79,7 @@ public class ResponseHandler {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE ->
-                            commNotificationService.responseToMessage(message);
+                            commBeanService.responseToMessage(message);
                     case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 

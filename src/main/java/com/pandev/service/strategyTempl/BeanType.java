@@ -1,11 +1,11 @@
-package com.pandev.service.motification;
+package com.pandev.service.strategyTempl;
 
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
  * Класс для поддержки определяемых значения
  */
-public class NotificationType {
+public class BeanType {
     public static final String ADD_ELEMENT = "addElement";
     public static final String REMOVE_ELEMENT = "removeElement";
     public static final String HELP = "help";

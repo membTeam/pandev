@@ -13,8 +13,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.controller.MessageAPI;
-import com.pandev.service.motification.NotificationService;
-import com.pandev.service.motification.NotificationType;
+import com.pandev.service.strategyTempl.StrategyTempl;
+import com.pandev.service.strategyTempl.BeanType;
 
 import com.pandev.entities.Groups;
 import com.pandev.utils.DTOparser;
@@ -23,9 +23,9 @@ import com.pandev.utils.ParserMessage;
 /**
  * Класс удаление элемента по строковому идентификатору группы
  */
-@Service(NotificationType.REMOVE_ELEMENT)
+@Service(BeanType.REMOVE_ELEMENT)
 @RequiredArgsConstructor
-public class RemoveElement implements NotificationService {
+public class RemoveElement implements StrategyTempl {
 
     private final GroupsRepository groupsRepo;
     private final MessageAPI messageAPI;
