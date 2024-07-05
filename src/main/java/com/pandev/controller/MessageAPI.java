@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.MessageSender;
-import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 @Service

@@ -97,7 +97,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     /** Создание List<DTOgroups> для выгрузки данных в Excel
      * @return
      */
-    @Query(value = "select new com.pandev.repositories.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
+    @Query(value = "select new com.pandev.dto.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
             "from Groups g join Groups s on g.parentnode = s.id " +
             "order by g.rootnode, g.ordernum")
     List<DTOgroups> findAllGroupsToDownload();

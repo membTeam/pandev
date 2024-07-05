@@ -1,7 +1,10 @@
 package com.pandev.controller;
 
+import com.pandev.service.strategyTempl.FactoryService;
+import com.pandev.utils.FileAPI;
+import com.pandev.utils.ParserMessage;
+import com.pandev.utils.excelAPI.ExcelService;
 import org.springframework.stereotype.Service;
-import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -11,31 +14,29 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.nio.file.Path;
 
 import static com.pandev.utils.Constants.*;
-import com.pandev.service.strategyTempl.FactoryService;
-import com.pandev.utils.FileAPI;
-import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.ExcelService;
 
 @Service
 public class ResponseHandler {
 
     private final FileAPI fileAPI;
-    private SilentSender sender;
     private final ExcelService excelService;
     private TelegramBot telegramBot;
     private final FactoryService commBeanService;
+    private final MessageAPI messageAPI;
+
 
     public ResponseHandler(FileAPI fileAPI,
-                           ExcelService excelService, FactoryService commBeanService) {
+                           ExcelService excelService, FactoryService commBeanService, MessageAPI messageAPI) {
         this.fileAPI = fileAPI;
 
         this.excelService = excelService;
         this.commBeanService = commBeanService;
+        this.messageAPI = messageAPI;
     }
 
     public void init(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
-        this.sender = telegramBot.silent();
+        //this.sender = telegramBot.silent();
     }
 
     /**
@@ -43,7 +44,7 @@ public class ResponseHandler {
      * @param chatId
      */
     private void unexpectedCommand(long chatId) {
-        sender.execute(MessageAPI.initMessage(chatId, "Команда не опознана."));
+        messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Команда не опознана."));
     }
 
 
@@ -57,10 +58,10 @@ public class ResponseHandler {
             String text = fileAPI.loadDataFromFile(file);
 
             SendMessage message = MessageAPI.initMessage(chatId, text);
-            sender.execute(message);
+            messageAPI.sendMessage(message);
 
         } catch (Exception ex) {
-            sender.execute(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
+            messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
     }
@@ -98,8 +99,7 @@ public class ResponseHandler {
     private void replyToUpload(long chatId) {
         var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
                 "Вставьте документ Excel.";
-        sender.execute(
-                MessageAPI.initMessage(chatId, text) );
+        messageAPI.sendMessage(MessageAPI.initMessage(chatId, text) );
     }
 
     /**
@@ -113,7 +113,7 @@ public class ResponseHandler {
         var resDTO =  excelService.downloadGroupsToExcel();
 
         if (!resDTO.res()) {
-            sender.execute(
+            messageAPI.sendMessage(
                     MessageAPI.initMessage(chatId, "Не известная ошибка загрузки файла.") );
             return;
         }
@@ -129,7 +129,7 @@ public class ResponseHandler {
         try {
             telegramBot.sender().sendDocument(sendDocument);
         } catch (Exception ex) {
-            sender.execute(
+            messageAPI.sendMessage(
                     MessageAPI.initMessage(chatId, "Не известная ошибка загрузки документа.") );
         }
 
