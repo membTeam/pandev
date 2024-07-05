@@ -6,18 +6,18 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.service.motification.NotificationService;
-import com.pandev.service.motification.NotificationType;
-import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.service.strategyTempl.StrategyTempl;
+import com.pandev.service.strategyTempl.BeanType;
+import com.pandev.utils.InitFormatedTreeString;
 import com.pandev.controller.MessageAPI;
 
 
 /**
  * Класс вывод древовидной структуры в форматированном виде
  */
-@Service(NotificationType.VIEW_TREE)
+@Service(BeanType.VIEW_TREE)
 @RequiredArgsConstructor
-public class ViewTree implements NotificationService {
+public class ViewTree implements StrategyTempl {
 
     private final GroupsRepository groupsRepo;
     private final MessageAPI messageAPI;
@@ -25,7 +25,7 @@ public class ViewTree implements NotificationService {
     @Override
     public void applyMethod(Message mess) {
 
-        var strFormated = InitListViewWithFormated.initViewFormated(groupsRepo);
+        var strFormated = InitFormatedTreeString.getFormatedTreeString(groupsRepo);
         messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
     }
 }

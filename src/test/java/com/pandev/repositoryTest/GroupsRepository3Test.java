@@ -2,7 +2,6 @@ package com.pandev.repositoryTest;
 
 
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.InitListGroups;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

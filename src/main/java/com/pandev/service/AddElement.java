@@ -3,11 +3,11 @@ package com.pandev.service;
 import com.pandev.controller.MessageAPI;
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.service.motification.NotificationService;
-import com.pandev.service.motification.NotificationType;
-import com.pandev.utils.DTOparser;
-import com.pandev.utils.DTOresult;
-import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.service.strategyTempl.StrategyTempl;
+import com.pandev.service.strategyTempl.BeanType;
+import com.pandev.dto.DTOparser;
+import com.pandev.dto.DTOresult;
+import com.pandev.utils.InitFormatedTreeString;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.APIGroupsNode;
 import com.pandev.utils.excelAPI.ServiceParentNode;
@@ -23,10 +23,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
  * Класс добавления элементов
  * Два обработчика: добавление корневого или дочернего элемента
  */
-@Service(NotificationType.ADD_ELEMENT)
+@Service(BeanType.ADD_ELEMENT)
 @RequiredArgsConstructor
 @Log4j
-public class AddElement implements NotificationService {
+public class AddElement implements StrategyTempl {
 
     private final GroupsRepository groupRepo;
     private final ServiceSubNode saveGroupsSubNode;
@@ -77,7 +77,7 @@ public class AddElement implements NotificationService {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
 
             if (parentNode == null) {
-                var strFormatedGroups = InitListViewWithFormated.initViewFormated(groupRepo);
+                var strFormatedGroups = InitFormatedTreeString.getFormatedTreeString(groupRepo);
 
                 return MessageAPI.initMessage(chatId,
                         "Корневой узел не найден.\n" +

@@ -52,7 +52,7 @@ public class TelegramBot extends AbilityBot {
     @PostConstruct
     private void init() {
         responseHandl.init(this);
-        messageAPI.init(sender);
+        messageAPI.init(this.silent);
     }
 
     private void uploadDocument(Update update)  {

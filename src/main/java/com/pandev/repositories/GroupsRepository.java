@@ -1,5 +1,6 @@
 package com.pandev.repositories;
 
+import com.pandev.dto.DTOgroups;
 import com.pandev.entities.Groups;
 import com.pandev.entities.GroupsDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -96,7 +97,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
     /** Создание List<DTOgroups> для выгрузки данных в Excel
      * @return
      */
-    @Query(value = "select new com.pandev.repositories.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
+    @Query(value = "select new com.pandev.dto.DTOgroups(g.ordernum, g.levelnum, s.txtgroup, g.txtgroup) " +
             "from Groups g join Groups s on g.parentnode = s.id " +
             "order by g.rootnode, g.ordernum")
     List<DTOgroups> findAllGroupsToDownload();

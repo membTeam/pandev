@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
+import com.pandev.dto.DTOresult;
 
 @Service
 @RequiredArgsConstructor

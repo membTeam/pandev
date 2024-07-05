@@ -1,5 +1,6 @@
 package com.pandev.utils;
 
+import com.pandev.dto.DTOparser;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**

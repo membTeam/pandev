@@ -1,12 +1,11 @@
 package com.pandev.utils;
 
 import com.pandev.repositories.GroupsRepository;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Форматированная строка дерева групп
+ * Преобразование запроса из репозитория getTreeData() в строку древовидной структуры.
  */
-public class InitListViewWithFormated {
+public class InitFormatedTreeString {
 
     /**
      * Преобразование первого символа в строчный
@@ -21,12 +20,11 @@ public class InitListViewWithFormated {
     }
 
     /**
-     * Преобразование данных таблицы groups into formated string
+     * Преобразование данных таблицы groups into tree formated string
      * @param repo
      * @return
      */
-    @Transactional(readOnly=true)
-    public static String initViewFormated(GroupsRepository repo) {
+    public static String getFormatedTreeString(GroupsRepository repo) {
         var sb = new StringBuffer();
 
         repo.getTreeData().stream()

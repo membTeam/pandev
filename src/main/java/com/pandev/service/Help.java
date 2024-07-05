@@ -5,16 +5,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import com.pandev.service.motification.NotificationService;
-import com.pandev.service.motification.NotificationType;
+import com.pandev.service.strategyTempl.StrategyTempl;
+import com.pandev.service.strategyTempl.BeanType;
 import com.pandev.utils.Constants;
 import com.pandev.utils.FileAPI;
 import com.pandev.controller.MessageAPI;
 
 
-@Service(NotificationType.HELP)
+@Service(BeanType.HELP)
 @RequiredArgsConstructor
-public class Help implements NotificationService {
+public class Help implements StrategyTempl {
     private final FileAPI fileAPI;
     private final MessageAPI messageAPI;
 
