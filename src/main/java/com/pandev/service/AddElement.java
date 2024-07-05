@@ -5,9 +5,9 @@ import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.service.strategyTempl.StrategyTempl;
 import com.pandev.service.strategyTempl.BeanType;
-import com.pandev.utils.DTOparser;
-import com.pandev.utils.DTOresult;
-import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.dto.DTOparser;
+import com.pandev.dto.DTOresult;
+import com.pandev.utils.InitFormatedTreeString;
 import com.pandev.utils.ParserMessage;
 import com.pandev.utils.excelAPI.APIGroupsNode;
 import com.pandev.utils.excelAPI.ServiceParentNode;
@@ -77,7 +77,7 @@ public class AddElement implements StrategyTempl {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
 
             if (parentNode == null) {
-                var strFormatedGroups = InitListViewWithFormated.initViewFormated(groupRepo);
+                var strFormatedGroups = InitFormatedTreeString.getFormatedTreeString(groupRepo);
 
                 return MessageAPI.initMessage(chatId,
                         "Корневой узел не найден.\n" +

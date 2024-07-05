@@ -17,7 +17,7 @@ import com.pandev.service.strategyTempl.StrategyTempl;
 import com.pandev.service.strategyTempl.BeanType;
 
 import com.pandev.entities.Groups;
-import com.pandev.utils.DTOparser;
+import com.pandev.dto.DTOparser;
 import com.pandev.utils.ParserMessage;
 
 /**

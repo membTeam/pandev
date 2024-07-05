@@ -1,5 +1,6 @@
 package com.pandev.repositories;
 
+import com.pandev.dto.DTOgroups;
 import com.pandev.entities.Groups;
 import com.pandev.entities.GroupsDetails;
 import org.springframework.data.jpa.repository.JpaRepository;

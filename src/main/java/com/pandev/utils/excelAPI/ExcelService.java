@@ -7,7 +7,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
@@ -23,9 +22,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.pandev.entities.Groups;
-import com.pandev.repositories.DTOgroups;
+import com.pandev.dto.DTOgroups;
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.DTOresult;
+import com.pandev.dto.DTOresult;
 
 @Log4j
 @Service

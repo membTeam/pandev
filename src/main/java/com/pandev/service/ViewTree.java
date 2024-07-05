@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.service.strategyTempl.StrategyTempl;
 import com.pandev.service.strategyTempl.BeanType;
-import com.pandev.utils.InitListViewWithFormated;
+import com.pandev.utils.InitFormatedTreeString;
 import com.pandev.controller.MessageAPI;
 
 
@@ -25,7 +25,7 @@ public class ViewTree implements StrategyTempl {
     @Override
     public void applyMethod(Message mess) {
 
-        var strFormated = InitListViewWithFormated.initViewFormated(groupsRepo);
+        var strFormated = InitFormatedTreeString.getFormatedTreeString(groupsRepo);
         messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
     }
 }
