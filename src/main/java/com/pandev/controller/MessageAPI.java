@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 
 /**
- * Сервис, используемый для ответов Response и создания объекта класса SendMessage as default
+ * Service, used for send Response and init object SendMessage
  */
 @Service
 @RequiredArgsConstructor
