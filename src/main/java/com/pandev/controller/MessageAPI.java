@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import org.springframework.stereotype.Service;
@@ -19,8 +20,11 @@ import org.springframework.stereotype.Service;
 public class MessageAPI {
 
     private SilentSender sender;
+    private TelegramBot telegramBot;
 
-    public void init(SilentSender sender) {
+
+    public void init(SilentSender sender, TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
         this.sender = sender;
     }
 
@@ -38,12 +42,26 @@ public class MessageAPI {
                 .build();
     }
 
+    public void unexpectedCommand(long chatId) {
+        sendMessage(initMessage(chatId, "Команда не опознана."));
+    }
+
     /**
      * Response message into telegramBot
      * @param sendMessage
      */
     public void sendMessage(SendMessage sendMessage) {
             sender.execute(sendMessage);
+    }
+
+    public void downloadDocument(SendDocument document) {
+        try {
+            telegramBot.sender().sendDocument(document);
+        } catch (Exception ex) {
+            sendMessage(
+                    MessageAPI.initMessage(Long.parseLong(document.getChatId()),
+                            "Не известная ошибка загрузки документа.") );
+        }
     }
 
 }

@@ -36,17 +36,7 @@ public class ResponseHandler {
 
     public void init(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
-        //this.sender = telegramBot.silent();
     }
-
-    /**
-     * Создание сообщения, если команда Не опознанная
-     * @param chatId
-     */
-    private void unexpectedCommand(long chatId) {
-        messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Команда не опознана."));
-    }
-
 
     /**
      * Создание стартового сообщения
@@ -79,15 +69,15 @@ public class ResponseHandler {
                 switch (strCommand) {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
-                         COMD_HELP, COMD_VIEW_TREE ->
+                         COMD_HELP, COMD_VIEW_TREE, COMD_DOWNLOAD ->
                             commBeanService.responseToMessage(message);
-                    case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
+
                     case COMD_UPLOAD -> replyToUpload(message.getChatId());
 
-                    default -> unexpectedCommand(message.getChatId());
+                    default -> messageAPI.unexpectedCommand(message.getChatId());
                 }
             } catch (Exception ex) {
-                unexpectedCommand(message.getChatId());
+                messageAPI.unexpectedCommand(message.getChatId());
             }
         }
     }
@@ -102,37 +92,5 @@ public class ResponseHandler {
         messageAPI.sendMessage(MessageAPI.initMessage(chatId, text) );
     }
 
-    /**
-     * Создание и выгрузка файла Excel.
-     * Создается в соответствии с шаблоном any-data/extenal-resource/template.xlsx.
-     * Метод excelService.writeGroupsToExcel() создает файл any-data/extenal-resource/download.xlsx,
-     * который используется для download
-     * @param chatId
-     */
-    private void replyToDownload(long chatId) {
-        var resDTO =  excelService.downloadGroupsToExcel();
-
-        if (!resDTO.res()) {
-            messageAPI.sendMessage(
-                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки файла.") );
-            return;
-        }
-
-        var strPath = ((Path) resDTO.value()).toAbsolutePath().toString();
-        InputFile document = new InputFile(new java.io.File(strPath));
-
-        SendDocument sendDocument = new SendDocument();
-        sendDocument.setChatId(chatId);
-        sendDocument.setCaption("Дерево групп в формате Excel");
-        sendDocument.setDocument(document);
-
-        try {
-            telegramBot.sender().sendDocument(sendDocument);
-        } catch (Exception ex) {
-            messageAPI.sendMessage(
-                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки документа.") );
-        }
-
-    }
 
 }
