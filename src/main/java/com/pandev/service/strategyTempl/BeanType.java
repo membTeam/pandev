@@ -14,7 +14,9 @@ public class BeanType {
     public static final String UPLOAD = "upload";
 
     public static String getType(Message message) {
-        var strMessage = message.getText().substring(1).trim();
+        var strMessage = message.hasDocument()
+                ? "upload"
+                : message.getText().substring(1).trim();
 
         var index = strMessage.indexOf(" ");
         String strCommand;
