@@ -2,7 +2,7 @@ package com.pandev.repositories;
 
 import com.pandev.dto.DTOgroups;
 import com.pandev.entities.Groups;
-import com.pandev.entities.GroupsDetails;
+import com.pandev.dto.GroupsDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -25,7 +25,7 @@ public interface GroupsRepository extends JpaRepository<Groups, Integer> {
      * Используется для команды telegramBot /viewTree
      * @return
      */
-    @Query(value = "select new com.pandev.entities.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.rootnode, g.ordernum")
+    @Query(value = "select new com.pandev.dto.GroupsDetails(g.levelnum, g.txtgroup) from Groups g order by g.rootnode, g.ordernum")
     List<GroupsDetails> getTreeData();
 
     Groups findByTxtgroup(String txtgroup );
