@@ -1,6 +1,5 @@
 package com.pandev.controller;
 
-import com.pandev.utils.Constants;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,9 @@ import java.util.function.BiConsumer;
 
 import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
+
+import com.pandev.utils.Constants;
+
 
 @Service
 public class TelegramBot extends AbilityBot {

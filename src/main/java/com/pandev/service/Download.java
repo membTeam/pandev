@@ -4,7 +4,6 @@ import com.pandev.controller.MessageAPI;
 import com.pandev.service.strategyTempl.StrategyTempl;
 import com.pandev.utils.excelAPI.ExcelService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -12,7 +11,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.nio.file.Path;
 
-
+/**
+ * Сервис команды /download выгрузка данных из БД в формат Excel
+ * Используется специальный шаблон: any-data/extenal-resource/template.xlsx
+ */
 @Service
 @RequiredArgsConstructor
 public class Download implements StrategyTempl {

@@ -1,27 +1,23 @@
 package com.pandev.controller;
 
-
-import com.pandev.utils.excelAPI.ExcelService;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
-
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.pandev.utils.excelAPI.ExcelService;
 
 /**
- * Service, used for send Response and init object SendMessage
+ * Service API,
+ * used for send Response sendMessage, upload, download and init object SendMessage
  */
 @Service
 @Log4j
@@ -60,6 +56,10 @@ public class MessageAPI {
                 .build();
     }
 
+    /**
+     * Уведомление: команда не опознана
+     * @param chatId
+     */
     public void unexpectedCommand(long chatId) {
         sendMessage(initMessage(chatId, "Команда не опознана."));
     }
@@ -72,7 +72,11 @@ public class MessageAPI {
             sender.execute(sendMessage);
     }
 
-
+    /**
+     * выгрузка данных в формате Excel
+     * используется специальный шаблон: any-data/extenal-resource/template.xlsx
+     * @param document
+     */
     public void downloadDocument(SendDocument document) {
         try {
             telegramBot.sender().sendDocument(document);
@@ -83,6 +87,11 @@ public class MessageAPI {
         }
     }
 
+    /**
+     * Загрузка данных в формате Excel
+     * Используется специальный шаблон: any-data/extenal-resource/test-upload-excel.xlsx
+     * @param message
+     */
     public void uploadDocument(Message message) {
 
         var document = message.getDocument();
