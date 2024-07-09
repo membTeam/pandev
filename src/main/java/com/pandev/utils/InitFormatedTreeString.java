@@ -3,7 +3,7 @@ package com.pandev.utils;
 import com.pandev.repositories.GroupsRepository;
 
 /**
- * Преобразование запроса из репозитория getTreeData() в строку древовидной структуры.
+ * Преобразование запроса из метода репозитория getTreeData() в строку древовидной структуры.
  */
 public class InitFormatedTreeString {
 

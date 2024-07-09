@@ -1,8 +1,8 @@
 package com.pandev.repositoryTest;
 
 import com.pandev.repositories.GroupsRepository;
-import com.pandev.utils.excelAPI.ExcelService;
-import com.pandev.utils.excelAPI.RecordDTOexcel;
+import com.pandev.service.excelService.ExcelService;
+import com.pandev.dto.RecordDTOexcel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

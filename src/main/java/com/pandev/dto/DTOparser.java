@@ -2,7 +2,7 @@ package com.pandev.dto;
 
 
 /**
- * Парсинг структуры класса Message, на составляющие
+ * Для парсинга структуры класса Message, на составляющие
  * Создается в классе ParserMessage.getParsingMessage
  * Используется в RemoveElement, AddElement, ResponseHandler
  * @param chatId Id chat

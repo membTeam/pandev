@@ -1,4 +1,4 @@
-package com.pandev.utils.excelAPI;
+package com.pandev.service.excelService;
 
 
 import lombok.RequiredArgsConstructor;
@@ -9,6 +9,11 @@ import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.dto.DTOresult;
 
+
+/**
+ * Вспомогательный API для обработки parentNode.
+ * Используется при обработке команд /addElement and /upload (from Excel)
+ */
 @Service
 @RequiredArgsConstructor
 public class ServiceParentNode {
@@ -17,8 +22,9 @@ public class ServiceParentNode {
     private final APIGroupsNode getGroupsNode;
 
     /**
+     * Запись Groups объекта в БД.
      * Запись в поле txtgroup в строчных символах,
-     * а при отображении в telegramBoт д/быть преобразование первого символа в прописной
+     * а при отображении в telegramBoт используется преобразование первого символа в прописной
      * @param
      * @return
      */
@@ -42,7 +48,6 @@ public class ServiceParentNode {
                 .levelnum(0)
                 .txtgroup(strRootnode)
                 .build();
-
 
         var resSave = groupsRepo.save(groups);
 

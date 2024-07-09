@@ -1,4 +1,4 @@
-package com.pandev.service;
+package com.pandev.service.commands;
 
 
 import lombok.RequiredArgsConstructor;

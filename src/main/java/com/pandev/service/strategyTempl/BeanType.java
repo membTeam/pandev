@@ -10,9 +10,13 @@ public class BeanType {
     public static final String REMOVE_ELEMENT = "removeElement";
     public static final String HELP = "help";
     public static final String VIEW_TREE = "viewTree";
+    public static final String DOWNLOAD = "download";
+    public static final String UPLOAD = "upload";
 
     public static String getType(Message message) {
-        var strMessage = message.getText().substring(1).trim();
+        var strMessage = message.hasDocument()
+                ? "upload"
+                : message.getText().substring(1).trim();
 
         var index = strMessage.indexOf(" ");
         String strCommand;
@@ -26,6 +30,9 @@ public class BeanType {
             case "ADDELEMENT" -> ADD_ELEMENT;
             case "REMOVEELEMENT" -> REMOVE_ELEMENT;
             case "VIEWTREE" -> VIEW_TREE;
+            case "DOWNLOAD" -> DOWNLOAD;
+            case "UPLOAD" -> UPLOAD;
+
             default -> HELP;
         };
 

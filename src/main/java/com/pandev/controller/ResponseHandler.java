@@ -3,50 +3,22 @@ package com.pandev.controller;
 import com.pandev.service.strategyTempl.FactoryService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.ExcelService;
+import com.pandev.service.excelService.ExcelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.nio.file.Path;
 
 import static com.pandev.utils.Constants.*;
 
 @Service
+@RequiredArgsConstructor
 public class ResponseHandler {
 
     private final FileAPI fileAPI;
-    private final ExcelService excelService;
-    private TelegramBot telegramBot;
     private final FactoryService commBeanService;
     private final MessageAPI messageAPI;
-
-
-    public ResponseHandler(FileAPI fileAPI,
-                           ExcelService excelService, FactoryService commBeanService, MessageAPI messageAPI) {
-        this.fileAPI = fileAPI;
-
-        this.excelService = excelService;
-        this.commBeanService = commBeanService;
-        this.messageAPI = messageAPI;
-    }
-
-    public void init(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-        //this.sender = telegramBot.silent();
-    }
-
-    /**
-     * Создание сообщения, если команда Не опознанная
-     * @param chatId
-     */
-    private void unexpectedCommand(long chatId) {
-        messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Команда не опознана."));
-    }
-
 
     /**
      * Создание стартового сообщения
@@ -54,14 +26,14 @@ public class ResponseHandler {
      */
     public void replyToStart(long chatId) {
         try {
-            String file = FILE_START_REGISTER_USER;
+            String file = FILE_START;
             String text = fileAPI.loadDataFromFile(file);
 
-            SendMessage message = MessageAPI.initMessage(chatId, text);
+            SendMessage message = messageAPI.initMessage(chatId, text);
             messageAPI.sendMessage(message);
 
         } catch (Exception ex) {
-            messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
+            messageAPI.sendMessage(messageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
     }
@@ -74,65 +46,26 @@ public class ResponseHandler {
         if (update != null && update.hasMessage()) {
             Message message = update.getMessage();
 
+            if (message.hasDocument()) {
+                commBeanService.responseToMessage(message);
+                return;
+            }
+
             var strCommand = ParserMessage.getstrCommandFromMessage(message);
             try {
                 switch (strCommand) {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
-                         COMD_HELP, COMD_VIEW_TREE ->
+                         COMD_HELP, COMD_VIEW_TREE, COMD_DOWNLOAD ->
                             commBeanService.responseToMessage(message);
-                    case COMD_DOWNLOAD -> replyToDownload(message.getChatId());
-                    case COMD_UPLOAD -> replyToUpload(message.getChatId());
+                    case COMD_UPLOAD -> messageAPI.infoMessageForUpload(message.getChatId());
 
-                    default -> unexpectedCommand(message.getChatId());
+                    default -> messageAPI.unexpectedCommand(message.getChatId());
                 }
             } catch (Exception ex) {
-                unexpectedCommand(message.getChatId());
+                messageAPI.unexpectedCommand(message.getChatId());
             }
         }
-    }
-
-    /**
-     * Сообщение с вспомогательным текстом как загружать Excel документ
-     * @param chatId
-     */
-    private void replyToUpload(long chatId) {
-        var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
-                "Вставьте документ Excel.";
-        messageAPI.sendMessage(MessageAPI.initMessage(chatId, text) );
-    }
-
-    /**
-     * Создание и выгрузка файла Excel.
-     * Создается в соответствии с шаблоном any-data/extenal-resource/template.xlsx.
-     * Метод excelService.writeGroupsToExcel() создает файл any-data/extenal-resource/download.xlsx,
-     * который используется для download
-     * @param chatId
-     */
-    private void replyToDownload(long chatId) {
-        var resDTO =  excelService.downloadGroupsToExcel();
-
-        if (!resDTO.res()) {
-            messageAPI.sendMessage(
-                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки файла.") );
-            return;
-        }
-
-        var strPath = ((Path) resDTO.value()).toAbsolutePath().toString();
-        InputFile document = new InputFile(new java.io.File(strPath));
-
-        SendDocument sendDocument = new SendDocument();
-        sendDocument.setChatId(chatId);
-        sendDocument.setCaption("Дерево групп в формате Excel");
-        sendDocument.setDocument(document);
-
-        try {
-            telegramBot.sender().sendDocument(sendDocument);
-        } catch (Exception ex) {
-            messageAPI.sendMessage(
-                    MessageAPI.initMessage(chatId, "Не известная ошибка загрузки документа.") );
-        }
-
     }
 
 }

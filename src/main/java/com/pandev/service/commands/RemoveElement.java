@@ -1,4 +1,4 @@
-package com.pandev.service;
+package com.pandev.service.commands;
 
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class RemoveElement implements StrategyTempl {
                             "Смотреть образец /help"));
         }
 
-        var result = MessageAPI.initMessage(mess.getChatId(), null);
+        var result = messageAPI.initMessage(mess.getChatId(), null);
 
         var strGroups = dtoParser.arrParams()[0].trim().toLowerCase();
 
