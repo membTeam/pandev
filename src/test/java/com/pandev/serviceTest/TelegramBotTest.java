@@ -1,7 +1,7 @@
 package com.pandev.serviceTest;
 
 
-import com.pandev.service.AddElement;
+import com.pandev.service.commands.AddElement;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

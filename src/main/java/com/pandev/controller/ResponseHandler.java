@@ -3,15 +3,11 @@ package com.pandev.controller;
 import com.pandev.service.strategyTempl.FactoryService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.ExcelService;
+import com.pandev.service.excelService.ExcelService;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.nio.file.Path;
 
 import static com.pandev.utils.Constants.*;
 
@@ -47,11 +43,11 @@ public class ResponseHandler {
             String file = FILE_START_REGISTER_USER;
             String text = fileAPI.loadDataFromFile(file);
 
-            SendMessage message = MessageAPI.initMessage(chatId, text);
+            SendMessage message = messageAPI.initMessage(chatId, text);
             messageAPI.sendMessage(message);
 
         } catch (Exception ex) {
-            messageAPI.sendMessage(MessageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
+            messageAPI.sendMessage(messageAPI.initMessage(chatId, "Неизвестная ошибка. Зайдите позднее"));
         }
 
     }
@@ -76,6 +72,7 @@ public class ResponseHandler {
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE, COMD_DOWNLOAD ->
                             commBeanService.responseToMessage(message);
+                    case COMD_UPLOAD -> messageAPI.infoMessageForUpload(message.getChatId());
 
                     default -> messageAPI.unexpectedCommand(message.getChatId());
                 }
@@ -92,7 +89,7 @@ public class ResponseHandler {
     private void replyToUpload(long chatId) {
         var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
                 "Вставьте документ Excel.";
-        messageAPI.sendMessage(MessageAPI.initMessage(chatId, text) );
+        messageAPI.sendMessage(messageAPI.initMessage(chatId, text) );
     }
 
 

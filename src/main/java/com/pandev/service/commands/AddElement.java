@@ -1,4 +1,4 @@
-package com.pandev.service;
+package com.pandev.service.commands;
 
 import com.pandev.controller.MessageAPI;
 import com.pandev.entities.Groups;
@@ -9,9 +9,9 @@ import com.pandev.dto.DTOparser;
 import com.pandev.dto.DTOresult;
 import com.pandev.utils.InitFormatedTreeString;
 import com.pandev.utils.ParserMessage;
-import com.pandev.utils.excelAPI.APIGroupsNode;
-import com.pandev.utils.excelAPI.ServiceParentNode;
-import com.pandev.utils.excelAPI.ServiceSubNode;
+import com.pandev.service.excelService.APIGroupsNode;
+import com.pandev.service.excelService.ServiceParentNode;
+import com.pandev.service.excelService.ServiceSubNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
@@ -44,7 +44,7 @@ public class AddElement implements StrategyTempl {
      */
     private SendMessage addRootElement(long chatId, String[] arr) {
 
-        var resultMes = MessageAPI.initMessage(chatId, null);
+        var resultMes = messageAPI.initMessage(chatId, null);
         var strGroupParent = arr[0].trim().toLowerCase();
 
         try {
@@ -71,7 +71,7 @@ public class AddElement implements StrategyTempl {
      * @return
      */
     private SendMessage addSubElement(long chatId, String[] arr) {
-        var resultMessage = MessageAPI.initMessage(chatId, null);
+        var resultMessage = messageAPI.initMessage(chatId, null);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
@@ -79,7 +79,7 @@ public class AddElement implements StrategyTempl {
             if (parentNode == null) {
                 var strFormatedGroups = InitFormatedTreeString.getFormatedTreeString(groupRepo);
 
-                return MessageAPI.initMessage(chatId,
+                return messageAPI.initMessage(chatId,
                         "Корневой узел не найден.\n" +
                         "Сверьте свои данные с деревом групп.\n" +
                         "--------------------\n" +
@@ -128,7 +128,7 @@ public class AddElement implements StrategyTempl {
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
 
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            messageAPI.sendMessage(MessageAPI.initMessage(mess.getChatId(),
+            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(),
                     "Формат команды должен включать:\n" +
                     "идентификатор команды и один или два аргумента\n"+
                     "Смотреть образец /help"));

@@ -1,4 +1,4 @@
-package com.pandev.service;
+package com.pandev.service.commands;
 
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class Upload implements StrategyTempl {
     @Override
     public void applyMethod(Message message) {
 
-        messageAPI.uploadDocument(message);
+        messageAPI.infoMessageForUpload(message);
 
     }
 }

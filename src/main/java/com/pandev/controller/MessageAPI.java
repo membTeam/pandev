@@ -13,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import com.pandev.utils.excelAPI.ExcelService;
+import com.pandev.service.excelService.ExcelService;
 
 /**
  * Service API,
@@ -49,7 +49,7 @@ public class MessageAPI {
      * @param mes
      * @return
      */
-    public static SendMessage initMessage(long chatId, String mes) {
+    public SendMessage initMessage(long chatId, String mes) {
         return SendMessage.builder()
                 .chatId(chatId)
                 .text(mes == null ? "empty" : mes)
@@ -81,10 +81,21 @@ public class MessageAPI {
         try {
             telegramBot.sender().sendDocument(document);
         } catch (Exception ex) {
-            sendMessage(
-                    MessageAPI.initMessage(Long.parseLong(document.getChatId()),
-                            "Не известная ошибка загрузки документа.") );
+                    sendMessage(
+                            initMessage(Long.parseLong(document.getChatId()),
+                            "Не известная ошибка загрузки документа.")
+                    );
         }
+    }
+
+    /**
+     * Создание пояснительного сообщения для команды upload
+     * @param chatId
+     */
+    public void infoMessageForUpload(long chatId) {
+        var text = "Вставьте файл Excel установленного образца.";
+        var message = initMessage(chatId, text);
+        sendMessage(message);
     }
 
     /**
@@ -92,7 +103,7 @@ public class MessageAPI {
      * Используется специальный шаблон: any-data/extenal-resource/test-upload-excel.xlsx
      * @param message
      */
-    public void uploadDocument(Message message) {
+    public void infoMessageForUpload(Message message) {
 
         var document = message.getDocument();
         var chatId = message.getChatId();
@@ -115,8 +126,8 @@ public class MessageAPI {
             excelService.saveDataByExcelToDb(lsData);
 
             sender.execute(
-                    MessageAPI.initMessage(chatId,
-                            "Выполнена загрузка данных из файла"));
+                    initMessage(chatId,"Выполнена загрузка данных из файла"));
+
         } catch (Exception ex) {
             sendMessage(
                     initMessage(chatId, "Не известная ошибка загрузки данных из Excel") );
