@@ -4,6 +4,7 @@ import com.pandev.service.strategyTempl.FactoryService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
 import com.pandev.service.excelService.ExcelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -12,27 +13,20 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import static com.pandev.utils.Constants.*;
 
 @Service
+@RequiredArgsConstructor
 public class ResponseHandler {
 
     private final FileAPI fileAPI;
-    private final ExcelService excelService;
-    private TelegramBot telegramBot;
     private final FactoryService commBeanService;
     private final MessageAPI messageAPI;
 
-
-    public ResponseHandler(FileAPI fileAPI,
-                           ExcelService excelService, FactoryService commBeanService, MessageAPI messageAPI) {
+/*    public ResponseHandler(FileAPI fileAPI,
+                           FactoryService commBeanService, MessageAPI messageAPI) {
         this.fileAPI = fileAPI;
 
-        this.excelService = excelService;
         this.commBeanService = commBeanService;
         this.messageAPI = messageAPI;
-    }
-
-    public void init(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
+    }*/
 
     /**
      * Создание стартового сообщения
@@ -40,7 +34,7 @@ public class ResponseHandler {
      */
     public void replyToStart(long chatId) {
         try {
-            String file = FILE_START_REGISTER_USER;
+            String file = FILE_START;
             String text = fileAPI.loadDataFromFile(file);
 
             SendMessage message = messageAPI.initMessage(chatId, text);

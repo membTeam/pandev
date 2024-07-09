@@ -36,8 +36,7 @@ public class AddElement implements StrategyTempl {
 
 
     /**
-     * ДОбавление корневого элемента
-     * Вся логика обработки в ExcelService.saveGroupParentFromExcel
+     * Добавление корневого элемента.
      * @param chatId
      * @param arr
      * @return
@@ -65,7 +64,6 @@ public class AddElement implements StrategyTempl {
 
     /**
      * Добавление субЭлемента только если есть родительский элемент.
-     * Вся логика обработки в ExcelService.saveDataByExcelToDb
      * @param chatId
      * @param arr массив 0 родительский элемент 1 субЭлемент
      * @return

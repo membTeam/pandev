@@ -2,7 +2,7 @@ package com.pandev.service.excelService;
 
 
 
-import com.pandev.dto.RecordDTOexcel;
+
 import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -26,7 +26,11 @@ import com.pandev.entities.Groups;
 import com.pandev.dto.DTOgroups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.dto.DTOresult;
+import com.pandev.dto.RecordDTOexcel;
 
+/**
+ * Основной сервис загрузки/выгрузки данных в Excel
+ */
 @Log4j
 @Service
 public class ExcelService {
@@ -39,7 +43,6 @@ public class ExcelService {
 
     private final ServiceParentNode saveParentNode;
     private final ServiceSubNode saveSubNode;
-    private final APIGroupsNode getGroupsNode;
     private final APIGroupsNode apiGroupsNode;
 
 
@@ -55,7 +58,6 @@ public class ExcelService {
         this.groupsRepo = groupsRepo;
         this.saveParentNode = saveGroupParentFromExcel;
         this.saveSubNode = saveGroupsSubNode;
-        this.getGroupsNode = getGroupsNode;
         this.apiGroupsNode = apiGroupsNode;
     }
 
@@ -63,7 +65,6 @@ public class ExcelService {
      * Выгрузка данных в файл Excel
      * @return
      */
-    @Transactional(readOnly = true)
     public DTOresult downloadGroupsToExcel() {
 
         var objCells = new Object(){
@@ -93,7 +94,7 @@ public class ExcelService {
         try {
             List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroupsToDownload();
             if (lsDTOgroups.size() == 0) {
-                throw new RuntimeException("mes:В БД нет данных для выгрузки в Excel");
+                throw new Exception("mes:В БД нет данных для выгрузки в Excel");
             }
 
             FileInputStream file = new FileInputStream(new File(path.toString()));
@@ -140,7 +141,7 @@ public class ExcelService {
     }
 
     /**
-     * Считывание данных из Excel file
+     * Считывание данных из Excel file.
      * Сканирование строк завершается, если значение cell is null
      * @param strFile
      * @return
@@ -165,10 +166,10 @@ public class ExcelService {
                     break;
                 }
 
-                var cell1 = row.getCell(0).getRichStringCellValue().getString();
-                var cell2 = row.getCell(1).getRichStringCellValue().getString();
+                var parentCell = row.getCell(0).getRichStringCellValue().getString();
+                var subCell = row.getCell(1).getRichStringCellValue().getString();
 
-                var dto = new RecordDTOexcel(cell1, cell2);
+                var dto = new RecordDTOexcel(parentCell, subCell);
                 resultData.add(dto);
             }
 
@@ -181,7 +182,7 @@ public class ExcelService {
     }
 
     /**
-     * Предварительная загрузка из БД
+     * Предварительная загрузка объектов, которые есть в БД
      * @param map
      * @param lsRecordDTOExcel
      * @param isParentNode
@@ -204,39 +205,34 @@ public class ExcelService {
     }
 
     /**
-     * Обработка делается в последовательности:
-     * если нет родительского элемента -> создается в saveGroupParentFromExcel.
-     * По каждому объекту из параметра lsRecordDTOExcel делается запись в БД.
-     * Т.образом сколько записей в excel столько раз будет делаться запись в БД.
-     * Для другого подхода необходимо согласование по ТЗ.
+     * Обработка делается в последовательности, если нет parentNode -> создается parentNode,
+     * а затем делается запись дочернего узла, если его нет в БД.
      * @param lsRecordDTOExcel создается из readFromExcel
      * @return
      */
     @Transactional
     public DTOresult saveDataByExcelToDb(List<RecordDTOexcel> lsRecordDTOExcel) {
+
         Map<String, Groups> mapSubGroups = new HashMap<>();
+
         initMapParentNode(mapSubGroups, lsRecordDTOExcel, false);
 
         for (var item : lsRecordDTOExcel) {
-            var txtParentNode = item.parentNode();
+            var txtParentNode = item.parentNode().trim().toLowerCase();
             var txtSubNode = item.groupNode().trim().toLowerCase();
 
-            if (mapSubGroups.containsKey(txtSubNode)) {
+            if (txtParentNode.equals(txtSubNode) || mapSubGroups.containsKey(txtSubNode)) {
                 continue;
             }
 
             var parentNode = (Groups) saveParentNode.saveParentNode(txtParentNode).value();
             mapSubGroups.put(parentNode.getTxtgroup().trim().toLowerCase(), parentNode);
 
-            if (parentNode.getTxtgroup().trim().toLowerCase().equals(txtSubNode)) {
-                continue;
-            }
-
             Groups subGroups = apiGroupsNode.initGroups(txtSubNode, parentNode);
 
             var groupsSaved = (Groups) saveSubNode.saveSubNode(subGroups).value();
-            mapSubGroups.put(groupsSaved.getTxtgroup().trim().toLowerCase(), groupsSaved);
 
+            mapSubGroups.put(groupsSaved.getTxtgroup().trim().toLowerCase(), groupsSaved);
         }
 
         return new DTOresult(true, "Данные из файла загружены в БД", null);

@@ -9,6 +9,11 @@ import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.dto.DTOresult;
 
+
+/**
+ * Вспомогательный API для обработки subNode.
+ * Используется при обработке команд /addElement and /upload (from Excel)
+ */
 @Service
 @RequiredArgsConstructor
 public class ServiceSubNode {
@@ -21,7 +26,7 @@ public class ServiceSubNode {
         var subFromRepo = getGroupsNode.getGroups(subNode.getTxtgroup());
 
         if (subFromRepo != null) {
-            return new DTOresult(true, "ok", subFromRepo);
+            return DTOresult.success(subFromRepo);
         }
 
         /**
