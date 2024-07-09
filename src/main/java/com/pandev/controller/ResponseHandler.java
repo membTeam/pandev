@@ -20,14 +20,6 @@ public class ResponseHandler {
     private final FactoryService commBeanService;
     private final MessageAPI messageAPI;
 
-/*    public ResponseHandler(FileAPI fileAPI,
-                           FactoryService commBeanService, MessageAPI messageAPI) {
-        this.fileAPI = fileAPI;
-
-        this.commBeanService = commBeanService;
-        this.messageAPI = messageAPI;
-    }*/
-
     /**
      * Создание стартового сообщения
      * @param chatId
@@ -75,16 +67,5 @@ public class ResponseHandler {
             }
         }
     }
-
-    /**
-     * Сообщение с вспомогательным текстом как загружать Excel документ
-     * @param chatId
-     */
-    private void replyToUpload(long chatId) {
-        var text = "Для загрузки данных из Excel используется специальный шаблон.\n" +
-                "Вставьте документ Excel.";
-        messageAPI.sendMessage(messageAPI.initMessage(chatId, text) );
-    }
-
 
 }

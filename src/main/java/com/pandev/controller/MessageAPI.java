@@ -16,8 +16,8 @@ import java.nio.file.Path;
 import com.pandev.service.excelService.ExcelService;
 
 /**
- * Service API,
- * used for send Response sendMessage, upload, download and init object SendMessage
+ * Service API for all commands telegramBot.
+ * Вспомогательный API for developer
  */
 @Service
 @Log4j
@@ -33,7 +33,6 @@ public class MessageAPI {
 
     public MessageAPI(ExcelService excelService, @Value("${path-external-resource}") String excelFileName) {
         this.excelService = excelService;
-
         this.excelFileName = excelFileName;
     }
 
@@ -73,7 +72,7 @@ public class MessageAPI {
     }
 
     /**
-     * выгрузка данных в формате Excel
+     * Выгрузка данных в формате Excel
      * используется специальный шаблон: any-data/extenal-resource/template.xlsx
      * @param document
      */

@@ -24,7 +24,6 @@ public class TelegramBot extends AbilityBot {
     private final ResponseHandler responseHandl;
     private final MessageAPI messageAPI;
 
-
     public TelegramBot(@Value("${BOT_TOKEN}") String token,
                        ResponseHandler responseHandl, MessageAPI messageAPI) {
 
@@ -38,6 +37,7 @@ public class TelegramBot extends AbilityBot {
     private void init() {
         messageAPI.init(silent, this);
     }
+
 
     public Reply replyToButtons() {
         BiConsumer<BaseAbilityBot, Update> action =

@@ -4,7 +4,7 @@ import com.pandev.dto.DTOparser;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 /**
- * Парсинг Message. Выделение из Message структуры данных: chatId, strCommand and String[] strParams
+ * Парсинг объекта Message. Выделение из Message структуры данных: chatId, strCommand and String[] strParams
  */
 public class ParserMessage {
 
