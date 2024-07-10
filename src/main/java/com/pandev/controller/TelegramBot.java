@@ -24,10 +24,11 @@ public class TelegramBot extends AbilityBot {
     private final ResponseHandler responseHandl;
     private final MessageAPI messageAPI;
 
-    public TelegramBot(@Value("${BOT_TOKEN}") String token,
-                       ResponseHandler responseHandl, MessageAPI messageAPI) {
-
-        super(token, "userpandev");
+    public TelegramBot(
+            @Value("${BOT_TOKEN}") String token,
+                       MessageAPI messageAPI,
+                       ResponseHandler responseHandl) {
+        super(token, "corseProj5bot");
 
         this.responseHandl = responseHandl;
         this.messageAPI = messageAPI;
