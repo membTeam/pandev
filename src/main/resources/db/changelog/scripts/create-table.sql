@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS public.groups
     rootnode integer,
     txtgroup character varying(150) COLLATE pg_catalog."default",
     CONSTRAINT groups_pkey PRIMARY KEY (id),
-    CONSTRAINT uk9uejlgx2wy4i4j7puypy62nmp UNIQUE (rootnode, ordernum),
-    CONSTRAINT uk9uodqy7h6mmbb48q33kpfgdsi UNIQUE (parentnode, txtgroup)
+    CONSTRAINT unique_rootnode_ordernum UNIQUE (rootnode, ordernum),
+    CONSTRAINT unique_parentnode_txtgroup UNIQUE (parentnode, txtgroup)
 )
 
 TABLESPACE pg_default;
@@ -16,7 +16,7 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS public.groups
     OWNER to postgres;
 
-CREATE INDEX IF NOT EXISTS idx1t27gtrqkafdiinysvptt7rby
+CREATE INDEX IF NOT EXISTS index_for_txtgroup
     ON public.groups USING btree
     (txtgroup COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
