@@ -26,8 +26,7 @@ public class ResponseHandler {
      */
     public void replyToStart(long chatId) {
         try {
-            String file = FILE_START;
-            String text = fileAPI.loadDataFromFile(file);
+            String text = fileAPI.loadDataFromFile(FILE_START);
 
             SendMessage message = messageAPI.initMessage(chatId, text);
             messageAPI.sendMessage(message);
