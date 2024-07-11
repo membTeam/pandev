@@ -26,6 +26,11 @@ public class ViewTree implements StrategyTempl {
     public void applyMethod(Message mess) {
 
         var strFormated = InitFormatedTreeString.getFormatedTreeString(groupsRepo);
-        messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
+        if (strFormated.length() == 0) {
+            messageAPI.sendMessage(
+                    messageAPI.initMessage(mess.getChatId(), "В БД нет данных") );
+        } else {
+            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
+        }
     }
 }
