@@ -3,7 +3,6 @@ package com.pandev.controller;
 import com.pandev.service.strategyTempl.FactoryService;
 import com.pandev.utils.FileAPI;
 import com.pandev.utils.ParserMessage;
-import com.pandev.service.excelService.ExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,7 +25,7 @@ public class ResponseHandler {
      */
     public void replyToStart(long chatId) {
         try {
-            String text = fileAPI.loadDataFromFile(FILE_START);
+            String text = fileAPI.loadTxtDataFromFile(FILE_START);
 
             SendMessage message = messageAPI.initMessage(chatId, text);
             messageAPI.sendMessage(message);

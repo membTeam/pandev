@@ -32,7 +32,7 @@ public class Download implements StrategyTempl {
 
         if (!resDTO.res()) {
             messageAPI.sendMessage(
-                    messageAPI.initMessage(chatId, "Не известная ошибка выгрузки файла Excel.") );
+                    messageAPI.initMessage(chatId, resDTO.mes()) );
             return;
         }
 

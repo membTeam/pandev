@@ -28,7 +28,7 @@ public class Help implements StrategyTempl {
         long chatId = mess.getChatId();
 
         try {
-            text = fileAPI.loadDataFromFile(file);
+            text = fileAPI.loadTxtDataFromFile(file);
 
             var mes = messageAPI.initMessage(chatId, text);
             messageAPI.sendMessage(mes);
