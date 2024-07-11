@@ -6,6 +6,13 @@ package com.pandev.utils;
 public class Constants {
     public static final String START_DESCRIPTION = "Starts the bot";
 
+    public static final String PATH_ANY_DATA = "any-data";
+    public static final String PATH_TXT_MESSAGE = PATH_ANY_DATA + "/txt-mess";
+
+    public static final String PATH_DIR_EXTENAL = PATH_ANY_DATA + "/extenal-resource";
+    public static final String FILE_EXCEL_TEMPLATE = PATH_DIR_EXTENAL + "/template.xlsx";
+    public static final String FILE_EXCEL_DOWNLOAD = PATH_DIR_EXTENAL + "/download.xlsx";
+
     public static final String FILE_START = "start-register-user.txt";
     public static final String FILE_HELP = "comd_help.txt";
 

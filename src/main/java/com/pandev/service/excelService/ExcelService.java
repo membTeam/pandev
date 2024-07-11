@@ -3,6 +3,7 @@ package com.pandev.service.excelService;
 
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -28,38 +29,21 @@ import com.pandev.repositories.GroupsRepository;
 import com.pandev.dto.DTOresult;
 import com.pandev.dto.RecordDTOexcel;
 
+import static com.pandev.utils.Constants.*;
+
 /**
  * Основной сервис загрузки/выгрузки данных в Excel
  */
 @Log4j
 @Service
+@RequiredArgsConstructor
 public class ExcelService {
 
-    private  String PATH_DIR_EXTENAL;
-    private  String FILE_EXCEL_TEMPLATE;
-    private  String FILE_EXCEL_DOWNLOAD;
-
     private final GroupsRepository groupsRepo;
-
     private final ServiceParentNode saveParentNode;
     private final ServiceSubNode saveSubNode;
     private final APIGroupsNode apiGroupsNode;
 
-
-    public ExcelService(@Value("${path-external-resource}") String dirExtenal,
-                        @Value("${file-excel-template}") String excelTemplate,
-                        @Value("${file-excel-download}") String fileexcelDownload,
-                        GroupsRepository groupsRepo, ServiceParentNode saveGroupParentFromExcel, ServiceSubNode saveGroupsSubNode, APIGroupsNode getGroupsNode, APIGroupsNode apiGroupsNode) {
-
-        FILE_EXCEL_TEMPLATE = excelTemplate;
-        PATH_DIR_EXTENAL = dirExtenal;
-        FILE_EXCEL_DOWNLOAD = fileexcelDownload;
-
-        this.groupsRepo = groupsRepo;
-        this.saveParentNode = saveGroupParentFromExcel;
-        this.saveSubNode = saveGroupsSubNode;
-        this.apiGroupsNode = apiGroupsNode;
-    }
 
     /**
      * Выгрузка данных в файл Excel
