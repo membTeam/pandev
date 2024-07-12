@@ -45,40 +45,42 @@ public class ExcelService {
     private final APIGroupsNode apiGroupsNode;
 
 
+    private class ObjCells {
+        private int rowNum = 1;
+        private int indexNum = 1;
+
+        public Cell createCell(Workbook wb, Row row, int numColumn, HorizontalAlignment align) {
+            var cell = row.createCell(numColumn);
+            var cellStyle = wb.createCellStyle();
+
+            cellStyle.setAlignment(align);
+            cell.setCellStyle(cellStyle);
+
+            return cell;
+        }
+
+        public int getRowNum() {
+            return rowNum++;
+        }
+        public int getIndexNum() {
+            return indexNum++;
+        }
+    }
+
     /**
      * Выгрузка данных в файл Excel
      * @return
      */
     public DTOresult downloadGroupsToExcel() {
 
-        var objCells = new Object(){
-            private int rowNum = 1;
-            private int indexNum = 1;
-
-            public Cell createCell(Workbook wb, Row row, int numColumn, HorizontalAlignment align) {
-                var cell = row.createCell(numColumn);
-                var cellStyle = wb.createCellStyle();
-
-                cellStyle.setAlignment(align);
-                cell.setCellStyle(cellStyle);
-
-                return cell;
-            }
-
-            public int getRowNum() {
-                return rowNum++;
-            }
-            public int getIndexNum() {
-                return indexNum++;
-            }
-        };
-
-        Path path = Paths.get(FILE_EXCEL_TEMPLATE);
+        var objCells = new ObjCells();
 
         try {
+            Path path = Paths.get("any-data");
+
             List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroupsToDownload();
             if (lsDTOgroups.size() == 0) {
-                throw new Exception("mes:В БД нет данных для выгрузки в Excel");
+                return DTOresult.err("mes:В БД нет данных для выгрузки в Excel");
             }
 
             FileInputStream file = new FileInputStream(new File(path.toString()));
@@ -118,6 +120,7 @@ public class ExcelService {
             return DTOresult.success(pathDownload);
 
         } catch (Exception ex) {
+            var err = ex.getMessage();
             log.error("downloadGroupsToExcel: " + ex.getMessage());
             return DTOresult.err(ex.getMessage());
         }

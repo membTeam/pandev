@@ -20,7 +20,6 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class Download implements StrategyTempl {
 
-    private final MessageAPI messageAPI;
     private final ExcelService excelService;
 
 

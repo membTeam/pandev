@@ -75,10 +75,11 @@ public class MessageAPI {
     }
 
     public void sendMessage(long chatId, DTOresult dto) {
-        SendMessage sendMessage = dto.res()
-                ? (SendMessage) dto.value()
-                : initMessage(chatId, dto.mes());
-        sendMessage(sendMessage);
+        if (!dto.res()) {
+            sendMessage(initMessage(chatId, dto.mes()));
+        } else {
+            sendMessage((SendMessage) dto.value());
+        }
     }
 
     /**
@@ -97,7 +98,8 @@ public class MessageAPI {
         } catch (Exception ex) {
                     sendMessage(
                             initMessage(chatId, "Не известная ошибка загрузки документа.")
-                    ); }
+                    );
+        }
     }
 
     /**
