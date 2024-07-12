@@ -115,7 +115,7 @@ public class MessageAPI {
      * Используется специальный шаблон: any-data/extenal-resource/test-upload-excel.xlsx
      * @param message
      */
-    public void infoMessageForUpload(Message message) {
+    public DTOresult infoMessageForUpload(Message message) {
 
         var document = message.getDocument();
         var chatId = message.getChatId();
@@ -137,12 +137,10 @@ public class MessageAPI {
             var lsData = excelService.readFromExcel(strFile);
             excelService.saveDataByExcelToDb(lsData);
 
-            sender.execute(
-                    initMessage(chatId,"Выполнена загрузка данных из файла"));
+            return DTOresult.success(initMessage(chatId,"Выполнена загрузка данных из файла"));
 
         } catch (Exception ex) {
-            sendMessage(
-                    initMessage(chatId, "Не известная ошибка загрузки данных из Excel") );
+            return DTOresult.err("Не известная ошибка загрузки данных из Excel");
         }
     }
 

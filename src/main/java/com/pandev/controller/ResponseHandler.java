@@ -45,8 +45,13 @@ public class ResponseHandler {
             Message message = update.getMessage();
 
             if (message.hasDocument()) {
-                messageAPI.downloadDocument(message.getChatId(), commBeanService.responseToMessage(message));
-                return;
+                var dtoRes = commBeanService.responseToMessage(message);
+
+                SendMessage sendMessage = dtoRes.res()
+                        ? ((SendMessage) dtoRes.value() )
+                        : messageAPI.initMessage(update.getMessage().getChatId(), dtoRes.mes());
+
+                messageAPI.sendMessage(sendMessage);
             }
 
             var strCommand = ParserMessage.getstrCommandFromMessage(message);
