@@ -1,6 +1,7 @@
 package com.pandev.service.commands;
 
 
+import com.pandev.dto.DTOresult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,7 +20,7 @@ public class Help implements StrategyTempl {
     private final MessageAPI messageAPI;
 
     @Override
-    public void applyMethod(Message mess) {
+    public DTOresult applyMethod(Message mess) {
 
 
         String text;
@@ -30,12 +31,10 @@ public class Help implements StrategyTempl {
         try {
             text = fileAPI.loadTxtDataFromFile(file);
 
-            var mes = messageAPI.initMessage(chatId, text);
-            messageAPI.sendMessage(mes);
+            return DTOresult.success(messageAPI.initMessage(chatId, text));
 
         } catch (Exception ex) {
-            var mes = messageAPI.initMessage(chatId, "Файл не найден");
-            messageAPI.sendMessage(mes);
+            return DTOresult.err("Файл не найден");
         }
     }
 }

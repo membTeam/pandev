@@ -1,6 +1,7 @@
 package com.pandev.service.strategyTempl;
 
 
+import com.pandev.dto.DTOresult;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -23,10 +24,10 @@ public class Factory {
         return strategyTempl;
     }
 
-    public void execute(Message message) {
+    public DTOresult execute(Message message) {
         var strType = BeanType.getType(message);
         StrategyTempl strategyTempl = getBeanService(strType);
-        strategyTempl.applyMethod(message);
+        return strategyTempl.applyMethod(message);
     }
 
 }

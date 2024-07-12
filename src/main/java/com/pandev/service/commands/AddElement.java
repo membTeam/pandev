@@ -106,6 +106,7 @@ public class AddElement implements StrategyTempl {
 
     public DTOresult applyMethodTest(long chatId, String[] arrParams) {
         SendMessage resultMes ;
+
         try {
             if (arrParams.length == 1) {
                 resultMes = addRootElement(chatId, arrParams);
@@ -121,29 +122,26 @@ public class AddElement implements StrategyTempl {
     }
 
     @Override
-    public void applyMethod(Message mess) {
+    public DTOresult applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
 
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(),
-                    "Формат команды должен включать:\n" +
+            return DTOresult.err("Формат команды должен включать:\n" +
                     "идентификатор команды и один или два аргумента\n"+
-                    "Смотреть образец /help"));
-
-            return;
+                    "Смотреть образец /help");
         }
 
         try {
             if (dtoParser.arrParams().length == 1) {
-                messageAPI.sendMessage(addRootElement(mess.getChatId(), dtoParser.arrParams()));
+                 return DTOresult.success(addRootElement(mess.getChatId(), dtoParser.arrParams()));
             } else {
-                messageAPI.sendMessage(addSubElement(mess.getChatId(), dtoParser.arrParams()));
+                return DTOresult.success(addSubElement(mess.getChatId(), dtoParser.arrParams()));
             }
 
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), "Не известная ошибка добавления элемента"));
+            return DTOresult.success(messageAPI.initMessage(mess.getChatId(), "Не известная ошибка добавления элемента"));
         }
     }
 }

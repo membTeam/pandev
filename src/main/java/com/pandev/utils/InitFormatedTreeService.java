@@ -1,10 +1,14 @@
 package com.pandev.utils;
 
 import com.pandev.repositories.GroupsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class InitFormatedTreeService {
+
+    private final GroupsRepository repo;
 
     /**
      * Преобразование первого символа в строчный
@@ -20,10 +24,9 @@ public class InitFormatedTreeService {
 
     /**
      * Преобразование данных таблицы groups into tree formated string
-     * @param repo
      * @return
      */
-    public String getFormatedTreeString(GroupsRepository repo) {
+    public String getFormatedTreeString() {
         var sb = new StringBuffer();
 
         repo.getTreeData().stream()

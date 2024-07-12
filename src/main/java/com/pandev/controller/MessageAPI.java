@@ -1,5 +1,6 @@
 package com.pandev.controller;
 
+import com.pandev.dto.DTOresult;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -44,6 +46,7 @@ public class MessageAPI {
 
     /**
      * init object SendMessage as default
+     *
      * @param chatId
      * @param mes
      * @return
@@ -71,20 +74,30 @@ public class MessageAPI {
             sender.execute(sendMessage);
     }
 
+    public void sendMessage(long chatId, DTOresult dto) {
+        SendMessage sendMessage = dto.res()
+                ? (SendMessage) dto.value()
+                : initMessage(chatId, dto.mes());
+        sendMessage(sendMessage);
+    }
+
     /**
      * Выгрузка данных в формате Excel
      * используется специальный шаблон: any-data/extenal-resource/template.xlsx
-     * @param document
+     * long chatId
+     * DTOresult dto
      */
-    public void downloadDocument(SendDocument document) {
+    public void downloadDocument(long chatId, DTOresult dto) {
         try {
-            telegramBot.sender().sendDocument(document);
+            if (dto.res()) {
+                telegramBot.sender().sendDocument( ((SendDocument)dto.value()));
+            } else {
+                throw new Exception(dto.mes());
+            }
         } catch (Exception ex) {
                     sendMessage(
-                            initMessage(Long.parseLong(document.getChatId()),
-                            "Не известная ошибка загрузки документа.")
-                    );
-        }
+                            initMessage(chatId, "Не известная ошибка загрузки документа.")
+                    ); }
     }
 
     /**

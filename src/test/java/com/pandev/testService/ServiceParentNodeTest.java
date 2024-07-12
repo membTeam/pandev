@@ -17,9 +17,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class ServiceParentNodeTest {
 
     @Mock
-    private GroupsRepository groupsRepo;
-
-    @Mock
     private APIGroupsNode getGroupsNode;
 
     @InjectMocks

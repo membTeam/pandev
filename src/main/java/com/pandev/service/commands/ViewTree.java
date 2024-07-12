@@ -1,6 +1,8 @@
 package com.pandev.service.commands;
 
 
+import com.pandev.dto.DTOresult;
+import com.pandev.utils.InitFormatedTreeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -19,18 +21,17 @@ import com.pandev.controller.MessageAPI;
 @RequiredArgsConstructor
 public class ViewTree implements StrategyTempl {
 
-    private final GroupsRepository groupsRepo;
     private final MessageAPI messageAPI;
+    private final InitFormatedTreeService initFormatedTreeService;
 
     @Override
-    public void applyMethod(Message mess) {
+    public DTOresult applyMethod(Message mess) {
 
-        var strFormated = InitFormatedTreeString.getFormatedTreeString(groupsRepo);
+        var strFormated = initFormatedTreeService.getFormatedTreeString();
         if (strFormated.length() == 0) {
-            messageAPI.sendMessage(
-                    messageAPI.initMessage(mess.getChatId(), "В БД нет данных") );
+                    return DTOresult.success(messageAPI.initMessage(mess.getChatId(), "В БД нет данных"));
         } else {
-            messageAPI.sendMessage(messageAPI.initMessage(mess.getChatId(), strFormated));
+            return DTOresult.success(messageAPI.initMessage(mess.getChatId(), strFormated));
         }
     }
 }

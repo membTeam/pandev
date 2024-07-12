@@ -45,7 +45,7 @@ public class ResponseHandler {
             Message message = update.getMessage();
 
             if (message.hasDocument()) {
-                commBeanService.responseToMessage(message);
+                messageAPI.downloadDocument(message.getChatId(), commBeanService.responseToMessage(message));
                 return;
             }
 
@@ -55,7 +55,8 @@ public class ResponseHandler {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
                          COMD_HELP, COMD_VIEW_TREE, COMD_DOWNLOAD ->
-                            commBeanService.responseToMessage(message);
+                           messageAPI.sendMessage(message.getChatId(), commBeanService.responseToMessage(message));
+
                     case COMD_UPLOAD -> messageAPI.infoMessageForUpload(message.getChatId());
 
                     default -> messageAPI.unexpectedCommand(message.getChatId());
