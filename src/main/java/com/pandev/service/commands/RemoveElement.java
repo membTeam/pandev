@@ -1,6 +1,6 @@
 package com.pandev.service.commands;
 
-import com.pandev.dto.DTOresult;
+
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import com.pandev.dto.DTOresult;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.controller.MessageAPI;
 import com.pandev.service.strategyTempl.StrategyTempl;
