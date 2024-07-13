@@ -30,6 +30,11 @@ public class MessageAPI {
         this.sender = sender;
     }
 
+    /**
+     * init SendMessage as default
+     * @param chatId
+     * @return SendMessage
+     */
     public SendMessage initMessage(long chatId) {
         return SendMessage.builder()
                 .chatId(chatId)
