@@ -43,7 +43,7 @@ public class AddElement implements StrategyTempl {
      */
     private SendMessage addRootElement(long chatId, String[] arr) {
 
-        var resultMes = messageAPI.initMessage(chatId, null);
+        var resultMes = messageAPI.initMessage(chatId);
         var strGroupParent = arr[0].trim().toLowerCase();
 
         try {
@@ -69,7 +69,7 @@ public class AddElement implements StrategyTempl {
      * @return
      */
     private SendMessage addSubElement(long chatId, String[] arr) {
-        var resultMessage = messageAPI.initMessage(chatId, null);
+        var resultMessage = messageAPI.initMessage(chatId);
 
         try {
             var parentNode = groupRepo.findByTxtgroup(arr[0].trim().toLowerCase());
@@ -103,23 +103,6 @@ public class AddElement implements StrategyTempl {
         return resultMessage;
     }
 
-
-    public DTOresult applyMethodTest(long chatId, String[] arrParams) {
-        SendMessage resultMes ;
-
-        try {
-            if (arrParams.length == 1) {
-                resultMes = addRootElement(chatId, arrParams);
-            } else {
-                resultMes = addSubElement(chatId, arrParams);
-            }
-
-            return new DTOresult(true, resultMes.getText(), null);
-        } catch (Exception ex) {
-            return DTOresult.err(ex.getMessage());
-        }
-
-    }
 
     @Override
     public DTOresult applyMethod(Message mess) {
