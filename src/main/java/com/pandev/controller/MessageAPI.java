@@ -131,8 +131,8 @@ public class MessageAPI {
 
         try {
             var lsData = excelService.readFromExcel(strFile);
-            result = excelService.saveDataByExcelToDb(lsData);
-            return result;
+            return excelService.saveDataByExcelToDb(lsData);
+
         } catch (Exception ex) {
             log.error(ex.getMessage());
             return DTOresult.err(ex.getMessage());
