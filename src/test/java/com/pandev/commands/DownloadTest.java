@@ -2,26 +2,22 @@ package com.pandev.commands;
 
 
 
-import com.pandev.repositories.GroupsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
-import static com.pandev.utils.Constants.FILE_EXCEL_TEMPLATE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import static com.pandev.utils.Constants.PATH_DIR_EXTENAL;
-import com.pandev.dto.DTOgroups;
+import static com.pandev.utils.Constants.PATH_DIR_EXTERNAL;
+
 import com.pandev.dto.DTOresult;
 import com.pandev.service.commands.Download;
 import com.pandev.service.excelService.ExcelService;
@@ -60,7 +56,7 @@ public class DownloadTest {
     @Test
     public void applyMethod() {
 
-        Path pathDTOResult = Paths.get(PATH_DIR_EXTENAL, "download-test.xlsx");
+        Path pathDTOResult = Paths.get(PATH_DIR_EXTERNAL, "download-test.xlsx");
 
         var dto = DTOresult.success(pathDTOResult);
 

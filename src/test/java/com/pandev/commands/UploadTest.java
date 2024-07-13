@@ -1,49 +1,77 @@
 package com.pandev.commands;
 
 import com.pandev.controller.MessageAPI;
+import com.pandev.controller.TelegramBot;
 import com.pandev.dto.DTOresult;
+import com.pandev.dto.RecordDTOexcel;
 import com.pandev.service.commands.Upload;
+import com.pandev.service.excelService.ExcelService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.pandev.utils.Constants.FILE_EXCEL_TEMPLATE;
-import static org.mockito.Mockito.when;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
-@SpringBootTest
+import static com.pandev.utils.Constants.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 public class UploadTest {
 
-    @Autowired
-    private MessageAPI messageAPI;
+    @Mock
+    private ExcelService excelService;
 
-    @Autowired
-    private Upload upload;
+    @Mock
+    private TelegramBot telegramBot;
 
-    @MockBean
+    @Mock
     private Message message;
 
-    @MockBean
+    @Mock
     private Document document;
+
+    @InjectMocks
+    private MessageAPI messageAPI;
+
+    private Upload upload;
+
+    @BeforeEach
+    public void setUp() {
+        initMocks(this);
+    }
+
 
     @Test
     public void applyMethod() {
-        when(message.getChatId()).thenReturn(1L);
 
-        InputFile document = new InputFile(new java.io.File(FILE_EXCEL_TEMPLATE));
+        Path pathTemp = Paths.get(PATH_DIR_EXTERNAL, FILE_EXCEL_TEMP);
 
-        SendDocument sendDocument = new SendDocument();
-        sendDocument.setChatId(1L);
-        sendDocument.setCaption("Дерево групп в формате Excel");
-        sendDocument.setDocument(document);
+        List<RecordDTOexcel> lsDTOexcel = List.of(
+                RecordDTOexcel.init("parentNode subNode") );
 
+        var dtoFromTelegaram = DTOresult.success(pathTemp);
+        var dtoFromExcelService = new DTOresult(true, "Данные из файла загружены в БД", null);
+
+        messageAPI.init(null, telegramBot);
+
+        when(telegramBot.uploadDocument(any(Message.class))).thenReturn(dtoFromTelegaram);
+        when(excelService.readFromExcel(any(String.class))).thenReturn(lsDTOexcel);
+        when(excelService.saveDataByExcelToDb(lsDTOexcel)).thenReturn(dtoFromExcelService);
+
+        upload = new Upload(messageAPI);
         var res = upload.applyMethod(message);
 
+        assertTrue(res.res());
 
     }
 

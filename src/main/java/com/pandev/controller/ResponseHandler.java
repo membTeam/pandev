@@ -64,7 +64,7 @@ public class ResponseHandler {
 
                     case COMD_DOWNLOAD -> messageAPI.downloadDocument(message.getChatId(), commBeanService.responseToMessage(message));
 
-                    case COMD_UPLOAD -> messageAPI.infoMessageForUpload(message.getChatId());
+                    case COMD_UPLOAD -> messageAPI.replyToUpload(message.getChatId());
 
                     default -> messageAPI.unexpectedCommand(message.getChatId());
                 }

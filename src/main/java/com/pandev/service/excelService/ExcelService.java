@@ -134,7 +134,7 @@ public class ExcelService {
      * @return
      */
     public List<RecordDTOexcel> readFromExcel(String strFile) {
-        var path = Paths.get(PATH_DIR_EXTENAL, strFile);
+        var path = Paths.get(PATH_DIR_EXTERNAL, strFile);
         List<RecordDTOexcel> resultData = new ArrayList<>();
 
         try {
