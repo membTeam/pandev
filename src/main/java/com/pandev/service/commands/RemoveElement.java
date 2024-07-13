@@ -57,10 +57,6 @@ public class RemoveElement implements StrategyTempl {
         var mapGroupsByLevernum = lsSelectGroupsForDelete.stream().collect(Collectors
                 .groupingBy(Groups::getLevelnum));
 
-/*        for (var item : mapGroupsByLevernum.entrySet()) {
-            mapTreeLevelnum.put(item.getKey(), item.getValue());
-        }*/
-
         mapTreeLevelnum.putAll(mapGroupsByLevernum);
 
         for (var entrySet : mapTreeLevelnum.entrySet()) {
@@ -90,7 +86,7 @@ public class RemoveElement implements StrategyTempl {
                             "Смотреть образец /help");
         }
 
-        var result = messageAPI.initMessage(mess.getChatId(), null);
+        var result = messageAPI.initMessage(mess.getChatId());
 
         var strGroups = dtoParser.arrParams()[0].trim().toLowerCase();
 
