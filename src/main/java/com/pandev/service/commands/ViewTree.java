@@ -29,7 +29,7 @@ public class ViewTree implements StrategyTempl {
 
         var strFormated = initFormatedTreeService.getFormatedTreeString();
         if (strFormated.length() == 0) {
-                    return DTOresult.success(messageAPI.initMessage(mess.getChatId(), "В БД нет данных"));
+            return DTOresult.success(messageAPI.initMessage(mess.getChatId(), "В БД нет данных"));
         } else {
             return DTOresult.success(messageAPI.initMessage(mess.getChatId(), strFormated));
         }

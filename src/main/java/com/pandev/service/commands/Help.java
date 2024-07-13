@@ -22,7 +22,6 @@ public class Help implements StrategyTempl {
     @Override
     public DTOresult applyMethod(Message mess) {
 
-
         String text;
 
         var file = Constants.FILE_HELP;

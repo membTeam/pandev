@@ -1,13 +1,15 @@
 package com.pandev.service.excelService;
 
 
-
-
+import com.pandev.dto.DTOgroups;
+import com.pandev.dto.DTOresult;
+import com.pandev.dto.RecordDTOexcel;
+import com.pandev.entities.Groups;
+import com.pandev.repositories.GroupsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.pandev.entities.Groups;
-import com.pandev.dto.DTOgroups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.dto.DTOresult;
-import com.pandev.dto.RecordDTOexcel;
 
 import static com.pandev.utils.Constants.*;
 
@@ -45,6 +41,11 @@ public class ExcelService {
     private final APIGroupsNode apiGroupsNode;
 
 
+    /**
+     * Вспомогательный локальный класс
+     * Инициализация ячеек Excel
+     * Используется в методе downloadGroupsToExcel()
+     */
     private class ObjCells {
         private int rowNum = 1;
         private int indexNum = 1;
@@ -76,7 +77,7 @@ public class ExcelService {
         var objCells = new ObjCells();
 
         try {
-            Path path = Paths.get("any-data");
+            Path path = Paths.get(FILE_EXCEL_TEMPLATE);
 
             List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroupsToDownload();
             if (lsDTOgroups.size() == 0) {
@@ -120,7 +121,6 @@ public class ExcelService {
             return DTOresult.success(pathDownload);
 
         } catch (Exception ex) {
-            var err = ex.getMessage();
             log.error("downloadGroupsToExcel: " + ex.getMessage());
             return DTOresult.err(ex.getMessage());
         }

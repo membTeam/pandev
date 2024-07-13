@@ -1,5 +1,22 @@
 package com.pandev.service;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
+import static com.pandev.utils.Constants.FILE_EXCEL_DOWNLOAD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.nio.file.Paths;
+import java.util.List;
+import java.nio.file.Path;
+
 import com.pandev.dto.DTOresult;
 import com.pandev.dto.RecordDTOexcel;
 import com.pandev.entities.Groups;
@@ -8,17 +25,7 @@ import com.pandev.service.excelService.APIGroupsNode;
 import com.pandev.service.excelService.ExcelService;
 import com.pandev.service.excelService.ServiceParentNode;
 import com.pandev.service.excelService.ServiceSubNode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import com.pandev.dto.DTOgroups;
 
 public class ExcelSeriveTest {
 
@@ -42,6 +49,22 @@ public class ExcelSeriveTest {
         initMocks(this);
     }
 
+
+    @Test
+    public void downloadGroupsToExcel() {
+
+        List<DTOgroups> lsDtogroups = List.of(
+                new DTOgroups(0,0,"parentNode", "subNode")
+        );
+
+        when(groupsRepo.findAllGroupsToDownload()).thenReturn(lsDtogroups);
+
+        var res = excelService.downloadGroupsToExcel();
+
+        assertTrue(res.res());
+        assertEquals(Paths.get(FILE_EXCEL_DOWNLOAD), ((Path) res.value()));
+
+    }
 
     @Test
     public void saveDataByExcelToDb() {

@@ -45,7 +45,9 @@ public class ViewTreeTree {
         when(initFormatedTreeService.getFormatedTreeString()).thenReturn("**resultTree");
         when(message.getChatId()).thenReturn(1L);
 
-        viewTree.applyMethod(message);
+        var dtoRes = viewTree.applyMethod(message);
+
+        assertTrue(dtoRes.res());
 
     }
 }
