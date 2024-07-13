@@ -1,4 +1,4 @@
-package com.pandev.testService;
+package com.pandev.service;
 
 import com.pandev.entities.Groups;
 import com.pandev.repositories.GroupsRepository;

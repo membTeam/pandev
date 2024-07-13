@@ -2,14 +2,12 @@ package com.pandev.utils;
 
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.pandev.utils.Constants.PATH_ANY_DATA;
 import static com.pandev.utils.Constants.PATH_TXT_MESSAGE;
 
 /**

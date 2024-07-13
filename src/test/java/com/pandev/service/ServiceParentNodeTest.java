@@ -1,7 +1,6 @@
-package com.pandev.testService;
+package com.pandev.service;
 
 import com.pandev.entities.Groups;
-import com.pandev.repositories.GroupsRepository;
 import com.pandev.service.excelService.APIGroupsNode;
 import com.pandev.service.excelService.ServiceParentNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,9 +14,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ServiceParentNodeTest {
-
-    @Mock
-    private GroupsRepository groupsRepo;
 
     @Mock
     private APIGroupsNode getGroupsNode;

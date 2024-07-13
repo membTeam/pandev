@@ -1,49 +1,50 @@
 package com.pandev.controller;
 
+import com.pandev.dto.DTOresult;
+import com.pandev.service.excelService.ExcelService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.sender.SilentSender;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-
-import com.pandev.service.excelService.ExcelService;
 
 /**
  * Service API for all commands telegramBot.
  * Вспомогательный API for developer
  */
 @Service
+@RequiredArgsConstructor
 @Log4j
 public class MessageAPI {
 
-    private String excelFileName;
-
     private SilentSender sender;
     private TelegramBot telegramBot;
-
     private final ExcelService excelService;
 
-
-    public MessageAPI(ExcelService excelService, @Value("${path-external-resource}") String excelFileName) {
-        this.excelService = excelService;
-        this.excelFileName = excelFileName;
-    }
-
-    public void init(SilentSender sender,  TelegramBot telegramBot) {
+    public void init(SilentSender sender, TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
         this.sender = sender;
     }
 
+    /**
+     * init SendMessage as default
+     * @param chatId
+     * @return SendMessage
+     */
+    public SendMessage initMessage(long chatId) {
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text("empty")
+                .build();
+    }
 
     /**
      * init object SendMessage as default
+     *
      * @param chatId
      * @param mes
      * @return
@@ -57,6 +58,7 @@ public class MessageAPI {
 
     /**
      * Уведомление: команда не опознана
+     *
      * @param chatId
      */
     public void unexpectedCommand(long chatId) {
@@ -65,25 +67,38 @@ public class MessageAPI {
 
     /**
      * Response message into telegramBot
+     *
      * @param sendMessage
      */
     public void sendMessage(SendMessage sendMessage) {
-            sender.execute(sendMessage);
+        sender.execute(sendMessage);
+    }
+
+    public void sendMessage(long chatId, DTOresult dto) {
+        if (!dto.res()) {
+            sendMessage(initMessage(chatId, dto.mes()));
+        } else {
+            sendMessage((SendMessage) dto.value());
+        }
     }
 
     /**
      * Выгрузка данных в формате Excel
      * используется специальный шаблон: any-data/extenal-resource/template.xlsx
-     * @param document
+     * long chatId
+     * DTOresult dto
      */
-    public void downloadDocument(SendDocument document) {
+    public void downloadDocument(long chatId, DTOresult dto) {
         try {
-            telegramBot.sender().sendDocument(document);
+            if (dto.res()) {
+                telegramBot.sender().sendDocument(((SendDocument) dto.value()));
+            } else {
+                throw new Exception(dto.mes());
+            }
         } catch (Exception ex) {
-                    sendMessage(
-                            initMessage(Long.parseLong(document.getChatId()),
-                            "Не известная ошибка загрузки документа.")
-                    );
+            sendMessage(
+                    initMessage(chatId, "Не известная ошибка загрузки документа.")
+            );
         }
     }
 
@@ -91,7 +106,7 @@ public class MessageAPI {
      * Создание пояснительного сообщения для команды upload
      * @param chatId
      */
-    public void infoMessageForUpload(long chatId) {
+    public void replyToUpload(long chatId) {
         var text = "Вставьте файл Excel установленного образца.";
         var message = initMessage(chatId, text);
         sendMessage(message);
@@ -102,36 +117,27 @@ public class MessageAPI {
      * Используется специальный шаблон: any-data/extenal-resource/test-upload-excel.xlsx
      * @param message
      */
-    public void infoMessageForUpload(Message message) {
+    public DTOresult replyToUpload(Message message) {
 
-        var document = message.getDocument();
-        var chatId = message.getChatId();
-        var fileId = document.getFileId();
+        var resDTO = telegramBot.uploadDocument(message);
+
+        if (!resDTO.res()) {
+            return resDTO;
+        }
+
+        var strFile = ((Path) resDTO.value()).toString();
+
+        DTOresult result;
 
         try {
-            GetFile getFile = new GetFile(fileId);
-
-            File file =  telegramBot.sender().execute(getFile);
-
-            var strFile = "temp.xlsx";
-            var pathExternale = Path.of(excelFileName, strFile);
-            Files.deleteIfExists(pathExternale);
-
-            java.io.File tempFile = new java.io.File(pathExternale.toAbsolutePath().toString());
-
-            telegramBot.downloadFile(file, tempFile);
-
             var lsData = excelService.readFromExcel(strFile);
-            excelService.saveDataByExcelToDb(lsData);
-
-            sender.execute(
-                    initMessage(chatId,"Выполнена загрузка данных из файла"));
-
+            result = excelService.saveDataByExcelToDb(lsData);
+            return result;
         } catch (Exception ex) {
-            sendMessage(
-                    initMessage(chatId, "Не известная ошибка загрузки данных из Excel") );
+            log.error(ex.getMessage());
+            return DTOresult.err(ex.getMessage());
         }
-    }
 
+    }
 
 }

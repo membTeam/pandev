@@ -45,8 +45,13 @@ public class ResponseHandler {
             Message message = update.getMessage();
 
             if (message.hasDocument()) {
-                commBeanService.responseToMessage(message);
-                return;
+                var dtoRes = commBeanService.responseToMessage(message);
+
+                SendMessage sendMessage = dtoRes.res()
+                        ? ((SendMessage) dtoRes.value() )
+                        : messageAPI.initMessage(update.getMessage().getChatId(), dtoRes.mes());
+
+                messageAPI.sendMessage(sendMessage);
             }
 
             var strCommand = ParserMessage.getstrCommandFromMessage(message);
@@ -54,9 +59,12 @@ public class ResponseHandler {
                 switch (strCommand) {
                     case COMD_START -> replyToStart(message.getChatId());
                     case COMD_ADD_ELEMENT, COMD_REMOVE_ELEMENT,
-                         COMD_HELP, COMD_VIEW_TREE, COMD_DOWNLOAD ->
-                            commBeanService.responseToMessage(message);
-                    case COMD_UPLOAD -> messageAPI.infoMessageForUpload(message.getChatId());
+                         COMD_HELP, COMD_VIEW_TREE ->
+                           messageAPI.sendMessage(message.getChatId(), commBeanService.responseToMessage(message));
+
+                    case COMD_DOWNLOAD -> messageAPI.downloadDocument(message.getChatId(), commBeanService.responseToMessage(message));
+
+                    case COMD_UPLOAD -> messageAPI.replyToUpload(message.getChatId());
 
                     default -> messageAPI.unexpectedCommand(message.getChatId());
                 }

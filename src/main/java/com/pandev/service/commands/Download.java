@@ -1,6 +1,7 @@
 package com.pandev.service.commands;
 
 import com.pandev.controller.MessageAPI;
+import com.pandev.dto.DTOresult;
 import com.pandev.service.strategyTempl.StrategyTempl;
 import com.pandev.service.excelService.ExcelService;
 import lombok.RequiredArgsConstructor;
@@ -19,21 +20,18 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class Download implements StrategyTempl {
 
-    private final MessageAPI messageAPI;
     private final ExcelService excelService;
 
 
     @Override
-    public void applyMethod(Message message) {
+    public DTOresult applyMethod(Message message) {
         Path filePath;
 
         var resDTO =  excelService.downloadGroupsToExcel();
         long chatId = message.getChatId();
 
         if (!resDTO.res()) {
-            messageAPI.sendMessage(
-                    messageAPI.initMessage(chatId, resDTO.mes()) );
-            return;
+            return resDTO;
         }
 
         filePath = (Path) resDTO.value();
@@ -46,7 +44,7 @@ public class Download implements StrategyTempl {
         sendDocument.setCaption("Дерево групп в формате Excel");
         sendDocument.setDocument(document);
 
-        messageAPI.downloadDocument(sendDocument);
+        return DTOresult.success(sendDocument);
 
     }
 }

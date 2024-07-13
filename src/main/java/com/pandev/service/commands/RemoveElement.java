@@ -1,5 +1,6 @@
 package com.pandev.service.commands;
 
+
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import com.pandev.dto.DTOresult;
 import com.pandev.repositories.GroupsRepository;
 import com.pandev.controller.MessageAPI;
 import com.pandev.service.strategyTempl.StrategyTempl;
@@ -56,10 +58,6 @@ public class RemoveElement implements StrategyTempl {
         var mapGroupsByLevernum = lsSelectGroupsForDelete.stream().collect(Collectors
                 .groupingBy(Groups::getLevelnum));
 
-/*        for (var item : mapGroupsByLevernum.entrySet()) {
-            mapTreeLevelnum.put(item.getKey(), item.getValue());
-        }*/
-
         mapTreeLevelnum.putAll(mapGroupsByLevernum);
 
         for (var entrySet : mapTreeLevelnum.entrySet()) {
@@ -80,17 +78,16 @@ public class RemoveElement implements StrategyTempl {
 
     @Override
     @Transactional
-    public void applyMethod(Message mess) {
+    public DTOresult applyMethod(Message mess) {
 
         DTOparser dtoParser = ParserMessage.getParsingMessage(mess);
         if (dtoParser.arrParams() == null || dtoParser.arrParams().length == 0) {
-            messageAPI.sendMessage( messageAPI.initMessage(mess.getChatId(),
-                    "Формат команды должен включать:\n" +
+            return DTOresult.err( "Формат команды должен включать:\n" +
                             "идентификатор команды и один аргумент\n"+
-                            "Смотреть образец /help"));
+                            "Смотреть образец /help");
         }
 
-        var result = messageAPI.initMessage(mess.getChatId(), null);
+        var result = messageAPI.initMessage(mess.getChatId());
 
         var strGroups = dtoParser.arrParams()[0].trim().toLowerCase();
 
@@ -105,8 +102,7 @@ public class RemoveElement implements StrategyTempl {
                         groupsRepo.findAllElementByRootNode(currElement.getRootnode()) );
 
                 result.setText("Выполнено ПОЛНОЕ удаление всех элементов корневого узла");
-                messageAPI.sendMessage(result);
-                return;
+                return DTOresult.success(result);
             }
 
             var groupsForDelete = dataPreparation(currElement);
@@ -126,11 +122,11 @@ public class RemoveElement implements StrategyTempl {
             }
 
             result.setText("Выполнено удаление элемента:" + strGroups);
+            return DTOresult.success(result);
 
         } catch (Exception ex) {
-            result.setText("Нет данных в БД :" + strGroups);
+            return DTOresult.err("Нет данных в БД :" + strGroups);
         }
 
-        messageAPI.sendMessage(result);
     }
 }

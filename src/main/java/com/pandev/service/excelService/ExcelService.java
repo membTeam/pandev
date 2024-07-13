@@ -1,13 +1,15 @@
 package com.pandev.service.excelService;
 
 
-
-
+import com.pandev.dto.DTOgroups;
+import com.pandev.dto.DTOresult;
+import com.pandev.dto.RecordDTOexcel;
+import com.pandev.entities.Groups;
+import com.pandev.repositories.GroupsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.pandev.entities.Groups;
-import com.pandev.dto.DTOgroups;
-import com.pandev.repositories.GroupsRepository;
-import com.pandev.dto.DTOresult;
-import com.pandev.dto.RecordDTOexcel;
 
 import static com.pandev.utils.Constants.*;
 
@@ -46,39 +42,46 @@ public class ExcelService {
 
 
     /**
+     * Вспомогательный локальный класс
+     * Инициализация ячеек Excel
+     * Используется в методе downloadGroupsToExcel()
+     */
+    private class ObjCells {
+        private int rowNum = 1;
+        private int indexNum = 1;
+
+        public Cell createCell(Workbook wb, Row row, int numColumn, HorizontalAlignment align) {
+            var cell = row.createCell(numColumn);
+            var cellStyle = wb.createCellStyle();
+
+            cellStyle.setAlignment(align);
+            cell.setCellStyle(cellStyle);
+
+            return cell;
+        }
+
+        public int getRowNum() {
+            return rowNum++;
+        }
+        public int getIndexNum() {
+            return indexNum++;
+        }
+    }
+
+    /**
      * Выгрузка данных в файл Excel
      * @return
      */
     public DTOresult downloadGroupsToExcel() {
 
-        var objCells = new Object(){
-            private int rowNum = 1;
-            private int indexNum = 1;
-
-            public Cell createCell(Workbook wb, Row row, int numColumn, HorizontalAlignment align) {
-                var cell = row.createCell(numColumn);
-                var cellStyle = wb.createCellStyle();
-
-                cellStyle.setAlignment(align);
-                cell.setCellStyle(cellStyle);
-
-                return cell;
-            }
-
-            public int getRowNum() {
-                return rowNum++;
-            }
-            public int getIndexNum() {
-                return indexNum++;
-            }
-        };
-
-        Path path = Paths.get(FILE_EXCEL_TEMPLATE);
+        var objCells = new ObjCells();
 
         try {
+            Path path = Paths.get(FILE_EXCEL_TEMPLATE);
+
             List<DTOgroups> lsDTOgroups = groupsRepo.findAllGroupsToDownload();
             if (lsDTOgroups.size() == 0) {
-                throw new Exception("mes:В БД нет данных для выгрузки в Excel");
+                return DTOresult.err("mes:В БД нет данных для выгрузки в Excel");
             }
 
             FileInputStream file = new FileInputStream(new File(path.toString()));
@@ -131,7 +134,7 @@ public class ExcelService {
      * @return
      */
     public List<RecordDTOexcel> readFromExcel(String strFile) {
-        var path = Paths.get(PATH_DIR_EXTENAL, strFile);
+        var path = Paths.get(PATH_DIR_EXTERNAL, strFile);
         List<RecordDTOexcel> resultData = new ArrayList<>();
 
         try {

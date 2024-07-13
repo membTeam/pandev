@@ -1,6 +1,7 @@
 package com.pandev.service.commands;
 
 
+import com.pandev.dto.DTOresult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -18,9 +19,7 @@ public class Upload implements StrategyTempl {
     private final MessageAPI messageAPI;
 
     @Override
-    public void applyMethod(Message message) {
-
-        messageAPI.infoMessageForUpload(message);
-
+    public DTOresult applyMethod(Message message) {
+        return messageAPI.replyToUpload(message);
     }
 }
